@@ -5,6 +5,7 @@
 ```
 jeopardy_lucene/
 ├── pom.xml
+├── wiki-subset-20140602
 └── src/main/java/edu/ir/
     ├── Main.java          CLI entry point (index / evaluate / search)
     ├── WikiIndexer.java   Parse Wikipedia corpus → Lucene index
