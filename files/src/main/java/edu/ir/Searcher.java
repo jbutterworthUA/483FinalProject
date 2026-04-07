@@ -2,15 +2,12 @@ package edu.ir;
 
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.search.similarities.BM25Similarity;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
-
-import javax.naming.directory.SearchResult;
 
 /**
  * Searcher
@@ -60,7 +57,7 @@ public class Searcher implements Closeable {
 
         List<SearchResult> results = new ArrayList<>();
         for (ScoreDoc sd : hits.scoreDocs) {
-            String title = searcher.doc(sd.doc).get("title_raw");
+            String title = searcher.storedFields().document(sd.doc).get("title_raw");
             results.add(new SearchResult(title, sd.score));
         }
         return results;
