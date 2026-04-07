@@ -24,7 +24,7 @@ jeopardy_lucene/
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar
+# Produces: target/jeopardy-qa-1.0-SNAPSHOT.jar
 # Produces: target/jeopardy-qa-1.0-SNAPSHOT.jar
 ```
 
@@ -41,8 +41,8 @@ java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar index \
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar evaluate \
-     --questions /path/to/questions.txt \
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar evaluate \
+     --questions ../wiki_questions.txt \
      --index_dir ./wiki_index \
      --errors
 ```
@@ -50,7 +50,7 @@ java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar evaluate \
 ### 3. Interactive single-question demo
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
      --index_dir ./wiki_index
 # Then type category and clue at the prompts.
 ```
@@ -58,7 +58,7 @@ java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
 ### 4. Single clue from command line
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
      --index_dir ./wiki_index \
      --category "ATHLETES" \
      --clue "This woman who won consecutive heptathlons at the Olympics went to UCLA on a basketball scholarship" \
