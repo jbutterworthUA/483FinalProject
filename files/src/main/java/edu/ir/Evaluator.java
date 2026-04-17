@@ -10,17 +10,17 @@ import java.util.*;
  *
  * Reads the 100-question file, runs each question through the Searcher,
  * and reports:
- *   - Top-1  accuracy  (rank-1 hit matches gold answer)
- *   - Top-5  accuracy  (gold answer within top 5)
- *   - Top-10 accuracy  (gold answer within top 10)
- *   - Mean Reciprocal Rank (MRR)
- *   - Per-question breakdown for error analysis
+ * - Top-1 accuracy (rank-1 hit matches gold answer)
+ * - Top-5 accuracy (gold answer within top 5)
+ * - Top-10 accuracy (gold answer within top 10)
+ * - Mean Reciprocal Rank (MRR)
+ * - Per-question breakdown for error analysis
  *
  * Question file format (4 lines per question, blank-line separated):
- *   CATEGORY
- *   CLUE
- *   ANSWER
- *   <blank line>
+ * CATEGORY
+ * CLUE
+ * ANSWER
+ * <blank line>
  */
 public class Evaluator {
 
@@ -30,7 +30,8 @@ public class Evaluator {
     // Question parsing
     // -----------------------------------------------------------------------
 
-    public record Question(String category, String clue, String answer) {}
+    public record Question(String category, String clue, String answer) {
+    }
 
     public static List<Question> parseQuestions(Path filepath) throws IOException {
         List<String> lines = Files.readAllLines(filepath, StandardCharsets.UTF_8);
@@ -39,12 +40,14 @@ public class Evaluator {
         int i = 0;
         while (i < lines.size()) {
             // skip blank lines
-            while (i < lines.size() && lines.get(i).isBlank()) i++;
-            if (i >= lines.size()) break;
+            while (i < lines.size() && lines.get(i).isBlank())
+                i++;
+            if (i >= lines.size())
+                break;
 
             String category = lines.get(i).strip();
-            String clue     = (i + 1 < lines.size()) ? lines.get(i + 1).strip() : "";
-            String answer   = (i + 2 < lines.size()) ? lines.get(i + 2).strip() : "";
+            String clue = (i + 1 < lines.size()) ? lines.get(i + 1).strip() : "";
+            String answer = (i + 2 < lines.size()) ? lines.get(i + 2).strip() : "";
             questions.add(new Question(category, clue, answer));
             i += 3;
         }
@@ -63,8 +66,19 @@ public class Evaluator {
 
     private static boolean titleMatch(String predicted, String gold) {
         String p = normalizeTitle(predicted);
-        String g = normalizeTitle(gold);
-        return p.equals(g) || p.contains(g) || g.contains(p);
+
+        // FIX 3: Split gold answer by pipe to handle multiple acceptable answers
+        // (e.g., "The Salvation Army|Salvation Army")
+        String[] acceptableAnswers = gold.split("\\|");
+
+        for (String rawGoldAnswer : acceptableAnswers) {
+            String g = normalizeTitle(rawGoldAnswer);
+            if (p.equals(g) || p.contains(g) || g.contains(p)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // -----------------------------------------------------------------------
@@ -72,7 +86,7 @@ public class Evaluator {
     // -----------------------------------------------------------------------
 
     public static void evaluate(List<Question> questions, Searcher searcher,
-                                boolean useCategory, boolean errorAnalysis)
+            boolean useCategory, boolean errorAnalysis)
             throws IOException {
 
         int n = questions.size();
@@ -88,8 +102,7 @@ public class Evaluator {
             Question q = questions.get(i);
             String catArg = useCategory ? q.category() : "";
 
-            List<Searcher.SearchResult> hits =
-                    searcher.search(q.clue(), catArg, TOP_K);
+            List<Searcher.SearchResult> hits = searcher.search(q.clue(), catArg, TOP_K);
 
             // Find rank of correct answer (1-based; 0 if not in top-k)
             int rank = 0;
@@ -100,14 +113,21 @@ public class Evaluator {
                 }
             }
 
-            if (rank == 1)  { top1++;  top5++;  top10++; }
-            else if (rank <= 5)  { top5++;  top10++; }
-            else if (rank <= 10) { top10++; }
+            if (rank == 1) {
+                top1++;
+                top5++;
+                top10++;
+            } else if (rank <= 5) {
+                top5++;
+                top10++;
+            } else if (rank <= 10) {
+                top10++;
+            }
 
             double rr = rank > 0 ? 1.0 / rank : 0.0;
             totalRR += rr;
 
-            String mark  = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗");
+            String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗");
             String top1t = hits.isEmpty() ? "(no results)" : hits.get(0).title();
 
             System.out.printf("%-4d  %-5s  %-7s  %-35s  %s%n",
@@ -118,14 +138,14 @@ public class Evaluator {
                     truncate(top1t, 45));
 
             if (rank != 1) {
-                failures.add(new String[]{
-                    String.valueOf(i + 1), q.category(), q.clue(),
-                    q.answer(), top1t,
-                    hits.size() >= 5
-                        ? hits.subList(0, 5).stream()
-                               .map(Searcher.SearchResult::title)
-                               .reduce("", (a, b) -> a.isEmpty() ? b : a + ", " + b)
-                        : ""
+                failures.add(new String[] {
+                        String.valueOf(i + 1), q.category(), q.clue(),
+                        q.answer(), top1t,
+                        hits.size() >= 5
+                                ? hits.subList(0, 5).stream()
+                                        .map(Searcher.SearchResult::title)
+                                        .reduce("", (a, b) -> a.isEmpty() ? b : a + ", " + b)
+                                : ""
                 });
             }
         }
@@ -133,9 +153,9 @@ public class Evaluator {
         double mrr = totalRR / n;
 
         System.out.println("=".repeat(90));
-        System.out.printf("  Top-1  accuracy : %.1f%%  (%d/%d)%n", 100.0*top1/n,  top1,  n);
-        System.out.printf("  Top-5  accuracy : %.1f%%  (%d/%d)%n", 100.0*top5/n,  top5,  n);
-        System.out.printf("  Top-10 accuracy : %.1f%%  (%d/%d)%n", 100.0*top10/n, top10, n);
+        System.out.printf("  Top-1  accuracy : %.1f%%  (%d/%d)%n", 100.0 * top1 / n, top1, n);
+        System.out.printf("  Top-5  accuracy : %.1f%%  (%d/%d)%n", 100.0 * top5 / n, top5, n);
+        System.out.printf("  Top-10 accuracy : %.1f%%  (%d/%d)%n", 100.0 * top10 / n, top10, n);
         System.out.printf("  MRR             : %.4f%n", mrr);
         System.out.println("=".repeat(90));
 

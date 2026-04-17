@@ -13,36 +13,38 @@ import java.util.*;
  * Searcher
  *
  * Wraps a Lucene IndexSearcher and exposes two public methods:
- *   - search(clue, category, topK)  →  ranked list of (title, score) pairs
- *   - predict(clue, category)       →  single best-matching title
+ * - search(clue, category, topK) → ranked list of (title, score) pairs
+ * - predict(clue, category) → single best-matching title
  *
  * Uses BM25Similarity (Lucene's default since v6), which is a state-of-the-art
- * probabilistic retrieval model.  Default BM25 parameters (k1=1.2, b=0.75)
+ * probabilistic retrieval model. Default BM25 parameters (k1=1.2, b=0.75)
  * work well out of the box; they can be tuned via the constructor overload.
  */
 public class Searcher implements Closeable {
 
     private final DirectoryReader reader;
-    private final IndexSearcher   searcher;
-    private final QueryBuilder    queryBuilder;
+    private final IndexSearcher searcher;
+    private final QueryBuilder queryBuilder;
 
     /**
      * Open an existing Lucene index with default BM25 parameters.
      */
     public Searcher(Path indexDir) throws IOException {
-        this(indexDir, 1.2f, 0.75f);
+        // this(indexDir, 1.2f, 0.75f);
+        // FIX: Lowered 'b' from 0.75f to 0.20f to stop penalizing long articles
+        this(indexDir, 1.2f, 0.20f);
     }
 
     /**
      * Open an existing Lucene index with custom BM25 k1 and b parameters.
      *
-     * @param k1  term-frequency saturation (typical range 0.5 – 2.0)
-     * @param b   length normalisation (0 = none, 1 = full)
+     * @param k1 term-frequency saturation (typical range 0.5 – 2.0)
+     * @param b  length normalisation (0 = none, 1 = full)
      */
     public Searcher(Path indexDir, float k1, float b) throws IOException {
         NIOFSDirectory dir = new NIOFSDirectory(indexDir);
-        this.reader       = DirectoryReader.open(dir);
-        this.searcher     = new IndexSearcher(reader);
+        this.reader = DirectoryReader.open(dir);
+        this.searcher = new IndexSearcher(reader);
         this.searcher.setSimilarity(new BM25Similarity(k1, b));
         this.queryBuilder = new QueryBuilder();
     }
@@ -77,5 +79,6 @@ public class Searcher implements Closeable {
     // -----------------------------------------------------------------------
     // Simple result record
     // -----------------------------------------------------------------------
-    public record SearchResult(String title, float score) {}
+    public record SearchResult(String title, float score) {
+    }
 }
