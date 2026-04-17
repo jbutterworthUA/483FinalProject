@@ -120,9 +120,7 @@ public class QueryBuilder {
 
             // FIX: Restored "&& wdIdx > 0" to prevent the first word of the sentence
             // (like "The", "This", "Originally") from hijacking the proper noun boost.
-            boolean capitalized = Character.isUpperCase(word.charAt(0))
-                    && !word.equals(word.toUpperCase()) // ignore ALL-CAPS noise
-                    && wdIdx > 0;
+            boolean capitalized = Character.isUpperCase(word.charAt(0)) && wdIdx > 0;
 
             String stemmed = analyzeSingle(word);
             if (stemmed == null)

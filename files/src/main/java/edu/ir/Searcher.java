@@ -30,9 +30,7 @@ public class Searcher implements Closeable {
      * Open an existing Lucene index with default BM25 parameters.
      */
     public Searcher(Path indexDir) throws IOException {
-        // this(indexDir, 1.2f, 0.75f);
-        // FIX: Lowered 'b' from 0.75f to 0.20f to stop penalizing long articles
-        this(indexDir, 1.2f, 0.20f);
+        this(indexDir, 1.2f, 0.75f);
     }
 
     /**
