@@ -73,7 +73,11 @@ public class Evaluator {
 
         for (String rawGoldAnswer : acceptableAnswers) {
             String g = normalizeTitle(rawGoldAnswer);
-            if (p.equals(g) || p.contains(g) || g.contains(p)) {
+            // p.equals(g): exact match after normalization
+            // g.contains(p): gold is longer form, predicted is valid short form (e.g. "O'Hare" matches "O'Hare International Airport")
+            // Intentionally omit p.contains(g): would cause false positives where any result
+            // whose title contains a short gold word (e.g. "France") counts as a hit.
+            if (p.equals(g) || g.contains(p)) {
                 return true;
             }
         }

@@ -127,7 +127,7 @@ public class QueryBuilder {
                 continue; // stopword or empty after stemming
             if (EXTRA_STOPWORDS.contains(stemmed))
                 continue;
-            if (stemmed.length() <= 2)
+            if (stemmed.length() < 2)
                 continue;
 
             analyzedWords.add(stemmed);

@@ -49,18 +49,48 @@ public class Searcher implements Closeable {
 
     /**
      * Return the top-k (title, score) pairs for the given clue.
+     * Results whose title is mentioned in the clue are filtered out — in Jeopardy,
+     * named entities in the clue are context, not the answer.
      */
     public List<SearchResult> search(String clue, String category, int topK)
             throws IOException {
         Query q = queryBuilder.buildQuery(clue, category);
-        TopDocs hits = searcher.search(q, topK);
+        TopDocs hits = searcher.search(q, topK * 4);
 
+        String clueLower = clue.toLowerCase();
         List<SearchResult> results = new ArrayList<>();
         for (ScoreDoc sd : hits.scoreDocs) {
             String title = searcher.storedFields().document(sd.doc).get("title_raw");
-            results.add(new SearchResult(title, sd.score));
+            if (!titleMentionedInClue(title, clueLower)) {
+                results.add(new SearchResult(title, sd.score));
+            }
+            if (results.size() >= topK) break;
         }
         return results;
+    }
+
+    /**
+     * Returns true if the result title is mentioned in the clue, meaning it is
+     * context rather than the answer. Uses two checks:
+     * 1. Direct substring match (e.g., "John Knox" in "where John Knox was minister")
+     * 2. Word-overlap: all significant words (length >= 4) of the title appear in
+     *    the clue, catching reordered forms like "Philip IV of France" vs
+     *    "France's Philip IV".
+     */
+    private boolean titleMentionedInClue(String title, String clueLower) {
+        String titleLower = title.toLowerCase();
+        if (clueLower.contains(titleLower)) return true;
+
+        String[] words = titleLower.split("[^a-z]+");
+        List<String> sig = new ArrayList<>();
+        for (String w : words) {
+            if (w.length() >= 4) sig.add(w);
+        }
+        if (sig.size() < 2) return false;
+        for (String w : sig) {
+            if (!clueLower.contains(w)) return false;
+        }
+        return true;
     }
 
     /** Return the single best-matching Wikipedia title. */
