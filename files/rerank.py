@@ -1,0 +1,177 @@
+import json
+import re
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from google import genai
+
+# =========================
+# CONFIG
+# =========================
+API_KEY = ""    # <-- PASTE YOUR API KEY HERE
+MODEL_NAME = "gemini-2.0-flash" 
+
+# FIX 1: Throttle down to 1 worker so we don't bombard the API simultaneously
+MAX_WORKERS = 1  
+
+# FIX 2: Give the backoff more attempts to survive temporary rate limits
+MAX_RETRIES = 6  
+
+# FIX 3: Increase the backoff multiplier (Wait 2s, 4s, 8s, 16s, 32s...)
+BACKOFF_BASE = 2 
+
+client = genai.Client(api_key=API_KEY)
+
+
+# =========================
+# UTILS
+# =========================
+def title_match(predicted, gold):
+    p = predicted.lower().strip()
+    if p.startswith("the "):
+        p = p[4:]
+
+    acceptable = gold.split("|")
+    for g in acceptable:
+        g = g.lower().strip()
+        if g.startswith("the "):
+            g = g[4:]
+        if p == g or g in p or p in g:
+            return True
+    return False
+
+
+def query_llm(prompt):
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+            )
+
+            if response and response.text:
+                text = response.text.strip()
+                
+                # Extract the final answer from the Chain-of-Thought reasoning
+                if "FINAL ANSWER:" in text:
+                    text = text.split("FINAL ANSWER:")[-1].strip()
+                    
+                # Strip out any lingering numbers or markdown formatting
+                text = re.sub(r"^\d+\.\s*", "", text)
+                text = text.replace("*", "").strip()
+                return text
+            else:
+                return ""
+
+        except Exception as e:
+            if attempt == MAX_RETRIES - 1:
+                print(f"API Error: {e}")
+                raise e
+            # Wait and retry if we hit rate limits (429)
+            time.sleep(BACKOFF_BASE**attempt)
+
+    return None
+
+
+def process_item(item):
+    clue = item["clue"]
+    cat = item["category"]
+    gold = item["gold"]
+    candidates = item["candidates"]
+
+    if not candidates:
+        return None
+
+    # Baseline Rank
+    rank_before = next(
+        (i + 1 for i, c in enumerate(candidates) if title_match(c, gold)), 0
+    )
+    rr_before = 1.0 / rank_before if rank_before else 0
+
+    # Format as bullet points instead of numbers to reduce position bias
+    options = "\n".join(f"- {c}" for c in candidates)
+    
+    # CHAIN-OF-THOUGHT PROMPT
+    prompt = f"""You are a Jeopardy champion analyzing a clue.
+Category: {cat}
+Clue: {clue}
+
+A basic search engine has proposed these 10 Wikipedia articles as potential answers:
+{options}
+
+First, briefly think step-by-step about the clue and evaluate the candidates.
+Then, on the very last line, provide your final choice formatted exactly like this:
+FINAL ANSWER: Exact Title Here"""
+
+    # LLM Request
+    try:
+        llm_choice = query_llm(prompt)
+    except Exception:
+        llm_choice = candidates[0]
+
+    # Robust matching: ensure LLM choice maps exactly back to a candidate
+    if llm_choice and llm_choice not in candidates:
+        matches = [c for c in candidates if llm_choice.lower() in c.lower() or c.lower() in llm_choice.lower()]
+        llm_choice = matches[0] if matches else candidates[0]
+    elif not llm_choice:
+        llm_choice = candidates[0]
+
+    # Re-rank: Put the LLM choice at Rank 1, shift everything else down
+    new_ranked = [llm_choice] + [c for c in candidates if c != llm_choice]
+
+    rank_after = next(
+        (i + 1 for i, c in enumerate(new_ranked) if title_match(c, gold)), 0
+    )
+
+    rr_after = 1.0 / rank_after if rank_after else 0
+    top1 = int(rank_after == 1)
+
+    # FIX 4: The 15 Requests Per Minute speed limit enforcer
+    # (4.5 seconds ensures we stay under the API limit)
+    time.sleep(4.5)
+
+    return {
+        "id": item["id"],
+        "rank_before": rank_before,
+        "rank_after": rank_after,
+        "rr_before": rr_before,
+        "rr_after": rr_after,
+        "top1": top1,
+        "choice": llm_choice,
+    }
+
+
+def main():
+    print("Loading Lucene predictions...")
+    with open("results.jsonl", "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+
+    results = []
+
+    print(f"Beginning LLM Re-ranking of {len(data)} queries...\n")
+    print(f"{'Q#':<5} | {'Old Rank':<10} | {'New Rank':<10} | {'LLM Choice'}")
+    print("-" * 75)
+
+    # ThreadPoolExecutor is throttled to 1 worker so it doesn't trigger a 429 Error
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = [executor.submit(process_item, item) for item in data]
+
+        for future in as_completed(futures):
+            res = future.result()
+            if res:
+                results.append(res)
+                print(
+                    f"{res['id']:<5} | {res['rank_before']:<10} | {res['rank_after']:<10} | {res['choice']}"
+                )
+
+    n = len(results)
+    print("\n" + "=" * 50)
+    print("RE-RANKING COMPLETE")
+    print("=" * 50)
+    print(f"Baseline Lucene MRR : {sum(r['rr_before'] for r in results)/n:.4f}")
+    print(f"New LLM MRR         : {sum(r['rr_after'] for r in results)/n:.4f}")
+    print(f"New Top-1 Accuracy  : {sum(r['top1'] for r in results)/n*100:.1f}%")
+
+
+if __name__ == "__main__":
+    main()
