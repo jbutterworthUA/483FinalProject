@@ -10,8 +10,6 @@
 ├── README.md
 ├── scripts/
 │   └── rerank.py
-├── results/
-│   └── results.jsonl
 └── src/main/java
     ├── Main.java          CLI entry point (index / evaluate / search)
     ├── WikiIndexer.java   Parse Wikipedia corpus → Lucene index
@@ -30,7 +28,7 @@
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.0-SNAPSHOT.jar
+# Produces: target/jeopardy-qa-1.0.jar
 ```
 
 ## Usage
