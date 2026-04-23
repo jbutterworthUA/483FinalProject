@@ -7,8 +7,8 @@ import java.util.List;
  *
  * Command-line entry point. Four subcommands:
  *
- * index --wiki_dir <dir> --index_dir <dir>
- * evaluate --questions <file> --index_dir <dir> [--no_category] [--errors] [--export <file>]
+ * index [--wiki_dir <dir>] [--index_dir <dir>]
+ * evaluate [--questions <file>] [--index_dir <dir>] [--no_category] [--errors] [--export <file>]
  * search --index_dir <dir> --clue "<clue>" [--category "<cat>"] [--top_k N]
  * tune --questions <file> --index_dir <dir> [--no_category]
  */
@@ -34,11 +34,15 @@ public class Main {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // index subcommand
-    // -----------------------------------------------------------------------
+    /**
+     * index subcommand
+     *
+     * parse the command line args and check for flags relevant to the index command 
+     *
+     * @param args the command arguments given at program launch - 
+     */
     private static void runIndex(String[] args) throws Exception {
-        Path wikiDir = Path.of(getArg(args, "--wiki_dir", "wiki_files"));
+        Path wikiDir = Path.of(getArg(args, "--wiki_dir", "wiki-subset-20140602"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
 
         System.out.println("Building Lucene index");
@@ -50,11 +54,13 @@ public class Main {
         WikiIndexer.buildIndex(wikiDir, indexDir);
     }
 
-    // -----------------------------------------------------------------------
-    // evaluate subcommand
-    // -----------------------------------------------------------------------
+    /**
+     * evaluate subcommand
+     *
+     *
+     */
     private static void runEvaluate(String[] args) throws Exception {
-        Path questionsFile = Path.of(getArg(args, "--questions", "questions.txt"));
+        Path questionsFile = Path.of(getArg(args, "--questions", "wiki_questions.txt"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
         boolean useCategory = !hasFlag(args, "--no_category");
         boolean errorAnalysis = hasFlag(args, "--errors");
@@ -182,32 +188,32 @@ public class Main {
         return false;
     }
 
+    /*
+     * print out a usage menu for users when no args are passed or its an invalid
+     * arg
+     */
     private static void printUsage() {
         System.out.println("""
-                Usage: java -jar jeopardy-qa.jar <command> [options]
+            Usage: java -jar jeopardy-qa.jar <command> [options]
 
-                Commands:
-                  index
-                    --wiki_dir  <dir>   Directory containing the 80 Wikipedia files
-                    --index_dir <dir>   Where to write the Lucene index  [default: wiki_index]
+            Commands:
+              index
+                [--wiki_dir  <dir>]    Directory containing the 80 Wikipedia files (defualt: wiki-subset-20140602)
+                [--index_dir <dir>]    Where to write the Lucene index             (default: wiki_index)
 
-                  evaluate
-                    --questions  <file>  Path to the 100-question file
-                    --index_dir  <dir>   Lucene index directory            [default: wiki_index]
-                    --no_category        Disable category signal in queries
-                    --errors             Print detailed failure analysis
-                    --export     <file>  Export top 10 results to JSONL for LLM re-ranking
+              evaluate
+                [--questions  <file>]  Path to the 100-question file               (default: wiki_questions.txt)
+                [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
+                [--no_category]        Disable category signal in queries
+                [--errors]             Print detailed failure analysis
+                [--export     <file>]  Export top 10 results to JSONL for LLM re-ranking
 
-                  search
-                    --index_dir  <dir>   Lucene index directory
-                    --clue       <str>   Single clue to search
-                    --category   <str>   Category string (optional)
-                    --top_k      <int>   Number of results to return       [default: 10]
-                  
-                  tune
-                    --questions  <file>  Path to the 100-question file
-                    --index_dir  <dir>   Lucene index directory            [default: wiki_index]
-                    --no_category        Disable category signal in queries
-                """);
+              search
+                [--index_dir  <dir>]   Lucene index directory
+                [--clue       <str>]   Single clue to search
+                [--category   <str>]   Category string (optional)
+                [--top_k      <int>]   Number of results to return                 (default: 10)
+             """);
     }
 }
+
