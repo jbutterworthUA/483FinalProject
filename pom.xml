@@ -5,17 +5,21 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edu.ir</groupId>
+    <!-- meta data -->
+    <groupId>jeopardy-qa</groupId>
     <artifactId>jeopardy-qa</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
+    <!-- details Java compiler version -->
+    <!-- version that has LTS -->
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <lucene.version>9.10.0</lucene.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <lucene.version>10.4.0</lucene.version>
     </properties>
 
+    <!-- lucene stuff -->
     <dependencies>
         <!-- Lucene core -->
         <dependency>
@@ -37,9 +41,9 @@
         </dependency>
     </dependencies>
 
+    <!-- Fat jar so can run with: java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar -->
     <build>
         <plugins>
-            <!-- Fat jar so you can run with: java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -51,7 +55,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>edu.ir.Main</mainClass>
+                                    <mainClass>Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>

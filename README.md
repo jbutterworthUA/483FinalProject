@@ -3,10 +3,16 @@
 ## Project Structure
 
 ```
-jeopardy_lucene/
+483FinalProject/
 ├── pom.xml
-├── wiki-subset-20140602
-└── src/main/java/edu/ir/
+├── wiki-subset-20140602/
+├── wiki_questions.txt
+├── README.md
+├── scripts/
+│   └── rerank.py
+├── results/
+│   └── results.jsonl
+└── src/main/java
     ├── Main.java          CLI entry point (index / evaluate / search)
     ├── WikiIndexer.java   Parse Wikipedia corpus → Lucene index
     ├── QueryBuilder.java  Convert Jeopardy clue → weighted Lucene query
@@ -16,7 +22,7 @@ jeopardy_lucene/
 
 ## Requirements
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - ~4 GB RAM for indexing (256 MB RAM buffer; disk index is ~2–3 GB)
 
@@ -24,7 +30,6 @@ jeopardy_lucene/
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.0-SNAPSHOT.jar
 # Produces: target/jeopardy-qa-1.0-SNAPSHOT.jar
 ```
 

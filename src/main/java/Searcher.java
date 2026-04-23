@@ -1,4 +1,3 @@
-package edu.ir;
 
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
