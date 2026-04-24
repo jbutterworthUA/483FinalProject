@@ -33,7 +33,7 @@ mvn package -q
 
 ## Usage
 
-### 1. Index the Wikipedia corpus (one-time, ~TBD-TBD min)
+### 1. Index the Wikipedia corpus (one-time, ~5 min)
 
 ```bash
 java -jar target/jeopardy-qa-1.0.jar index
@@ -42,7 +42,7 @@ java -jar target/jeopardy-qa-1.0.jar index
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar evaluate --errors
+java -jar target/jeopardy-qa-1.0.jar evaluate --errors
 ```
 
 ### 3. Interactive single-question demo
