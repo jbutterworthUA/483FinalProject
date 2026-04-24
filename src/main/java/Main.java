@@ -37,9 +37,13 @@ public class Main {
     /**
      * index subcommand
      *
-     * parse the command line args and check for flags relevant to the index command 
+     * parse the command line args and check for flags relevant to the index command. launches
+     * the index builder
      *
-     * @param args the command arguments given at program launch - 
+     * --wiki_dir optional flag to specify the data set path
+     * --index_dir optional flag to specify where to build the index
+     *
+     * @param args the command arguments given at program launch
      */
     private static void runIndex(String[] args) throws Exception {
         Path wikiDir = Path.of(getArg(args, "--wiki_dir", "wiki-subset-20140602"));
@@ -57,7 +61,13 @@ public class Main {
     /**
      * evaluate subcommand
      *
+     * parse command line args and check for flags relevant to the evaluate command. launches
+     * the evaluator
      *
+     * --questions optional flag to specify path to questions
+     * --index_dir optional flag to specify path to the created index
+     *
+     *@param args the command arguments given at program launch
      */
     private static void runEvaluate(String[] args) throws Exception {
         Path questionsFile = Path.of(getArg(args, "--questions", "wiki_questions.txt"));
@@ -67,7 +77,7 @@ public class Main {
         
         Path exportPath = null;
         if (hasFlag(args, "--export")) {
-            exportPath = Path.of(getArg(args, "--export", "results.jsonl"));
+            exportPath = Path.of(getArg(args, "--export", "results/results.jsonl"));
         }
 
         System.out.println("Evaluating Jeopardy QA system");

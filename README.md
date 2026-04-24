@@ -42,10 +42,7 @@ java -jar target/jeopardy-qa-1.0.jar index
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar evaluate \
-     --questions ../wiki_questions.txt \
-     --index_dir ./wiki_index \
-     --errors
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar evaluate --errors
 ```
 
 ### 3. Interactive single-question demo
