@@ -3,10 +3,16 @@
 ## Project Structure
 
 ```
-jeopardy_lucene/
+483FinalProject/
 ├── pom.xml
-├── wiki-subset-20140602
-└── src/main/java/edu/ir/
+├── wiki-subset-20140602/
+├── wiki_questions.txt
+├── README.md
+├── example/
+│   └── wiki-example.txt
+├── scripts/
+│   └── rerank.py
+└── src/main/java/
     ├── Main.java          CLI entry point (index / evaluate / search)
     ├── WikiIndexer.java   Parse Wikipedia corpus → Lucene index
     ├── QueryBuilder.java  Convert Jeopardy clue → weighted Lucene query
@@ -16,7 +22,7 @@ jeopardy_lucene/
 
 ## Requirements
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - ~4 GB RAM for indexing (256 MB RAM buffer; disk index is ~2–3 GB)
 
@@ -24,32 +30,27 @@ jeopardy_lucene/
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar
+# Produces: target/jeopardy-qa-1.0.jar
 ```
 
 ## Usage
 
-### 1. Index the Wikipedia corpus (one-time, ~20–40 min)
+### 1. Index the Wikipedia corpus (one-time, ~5 min)
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar index \
-     --wiki_dir  /path/to/wiki_files \
-     --index_dir ./wiki_index
+java -jar target/jeopardy-qa-1.0.jar index
 ```
 
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar evaluate \
-     --questions /path/to/questions.txt \
-     --index_dir ./wiki_index \
-     --errors
+java -jar target/jeopardy-qa-1.0SNAPSHOT.jar evaluate --errors
 ```
 
 ### 3. Interactive single-question demo
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
      --index_dir ./wiki_index
 # Then type category and clue at the prompts.
 ```
@@ -57,7 +58,7 @@ java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
 ### 4. Single clue from command line
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT-jar-with-dependencies.jar search \
+java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
      --index_dir ./wiki_index \
      --category "ATHLETES" \
      --clue "This woman who won consecutive heptathlons at the Olympics went to UCLA on a basketball scholarship" \
