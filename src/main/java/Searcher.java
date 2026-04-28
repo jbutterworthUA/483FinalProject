@@ -75,9 +75,9 @@ public class Searcher implements Closeable {
         reader.close();
     }
 
-    // -----------------------------------------------------------------------
-    // Simple result record
-    // -----------------------------------------------------------------------
-    public record SearchResult(String title, float score) {
-    }
+    /**
+     * Simple result record
+     */
+    public record SearchResult(String title, float score) {}
+
 }

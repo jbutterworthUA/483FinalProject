@@ -38,7 +38,7 @@ mvn package -q
 ### 1. Index the Wikipedia corpus (one-time, ~5 min)
 
 ```bash
-java -jar target/jeopardy-qa-1.0.jar index
+java -jar target/jeopardy-qa-1.jar index
 ```
 
 ### 2. Evaluate on the 100 Jeopardy questions
@@ -50,14 +50,14 @@ java -jar target/jeopardy-qa-1.jar evaluate --errors
 ### 3. Interactive single-question demo
 
 ```bash
-java -jar target/jeopardy-qa-1.0.jar search
+java -jar target/jeopardy-qa-1.jar search
 # Then type category and clue at the prompts.
 ```
 
 ### 4. Single clue from command line
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
+java -jar target/jeopardy-qa-1.jar search \
      --category "ATHLETES" \
      --clue "This woman who won consecutive heptathlons at the Olympics went to UCLA on a basketball scholarship" \
 ```

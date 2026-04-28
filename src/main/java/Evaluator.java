@@ -108,11 +108,14 @@ public class Evaluator {
             Question q = questions.get(i);
             String catArg = useCategory ? q.category() : "";
 
+            // get list top k SearchResult objects from search
             List<Searcher.SearchResult> hits = searcher.search(q.clue(), catArg, TOP_K);
 
+            // if a fuzzy match (can have 'the') will catch it
             int rank = 0;
             for (int r = 0; r < hits.size(); r++) {
                 if (titleMatch(hits.get(r).title(), q.answer())) {
+                    // rank is on 0-based indexing so have to +1 to get real rank
                     rank = r + 1;
                     break;
                 }
