@@ -44,14 +44,13 @@ java -jar target/jeopardy-qa-1.0.jar index
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0SNAPSHOT.jar evaluate --errors
+java -jar target/jeopardy-qa-1.jar evaluate --errors
 ```
 
 ### 3. Interactive single-question demo
 
 ```bash
-java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
-     --index_dir ./wiki_index
+java -jar target/jeopardy-qa-1.0.jar search
 # Then type category and clue at the prompts.
 ```
 
@@ -59,10 +58,8 @@ java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
 
 ```bash
 java -jar target/jeopardy-qa-1.0-SNAPSHOT.jar search \
-     --index_dir ./wiki_index \
      --category "ATHLETES" \
      --clue "This woman who won consecutive heptathlons at the Olympics went to UCLA on a basketball scholarship" \
-     --top_k 5
 ```
 
 ---
