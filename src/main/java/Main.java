@@ -67,11 +67,12 @@ public class Main {
      * --questions optional flag to specify path to questions
      * --index_dir optional flag to specify path to the created index
      *
-     *@param args the command arguments given at program launch
+     * @param args the command arguments given at program launch
      */
     private static void runEvaluate(String[] args) throws Exception {
         Path questionsFile = Path.of(getArg(args, "--questions", "wiki_questions.txt"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
+
         boolean useCategory = !hasFlag(args, "--no_category");
         boolean errorAnalysis = hasFlag(args, "--errors");
         
@@ -97,15 +98,30 @@ public class Main {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // search subcommand
-    // -----------------------------------------------------------------------
+    /**
+     * search subcommand
+     *
+     * launches an interactive search that allows a user to input a category and a clue then 
+     * returns the topK results our system grabs
+     *
+     * --index_dir optional flag specifies path to lucene created index
+     * --top_k optionl command to specify number of results returned
+     *
+     * commands used to specify a single clue and return results:
+     *
+     * --clue optional command to specify clue
+     * --category optional command to specificy category
+     *
+     * @param args the command arguments given at program launch
+     */
     private static void runSearch(String[] args) throws Exception {
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
-        String clue = getArg(args, "--clue", "");
-        String category = getArg(args, "--category", "");
         int topK = Integer.parseInt(getArg(args, "--top_k", "10"));
 
+        String clue = getArg(args, "--clue", "");
+        String category = getArg(args, "--category", "");
+
+        // interactive version
         if (clue.isBlank()) {
             java.util.Scanner sc = new java.util.Scanner(System.in);
             try (Searcher searcher = new Searcher(indexDir)) {
@@ -118,10 +134,10 @@ public class Main {
                         break;
                     printHits(searcher.search(clue, category, topK));
                     System.out.println();
-
                 }
             }
             sc.close();
+        // single search version
         } else {
             try (Searcher searcher = new Searcher(indexDir)) {
                 printHits(searcher.search(clue, category, topK));
@@ -129,9 +145,13 @@ public class Main {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // tune subcommand
-    // -----------------------------------------------------------------------
+    /**
+     * tune subcomman 
+     *
+     * used to test different k1 values
+     *
+     * @param args the command arguments given at program launch
+     */
     private static void runTune(String[] args) throws Exception {
         Path questionsFile = Path.of(getArg(args, "--questions", "questions.txt"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
@@ -168,9 +188,9 @@ public class Main {
         System.out.println("  " + "=".repeat(23));
     }
 
-    // -----------------------------------------------------------------------
-    // Print Hits Helper
-    // -----------------------------------------------------------------------
+    /**
+     * print hits helper
+     */
     private static void printHits(List<Searcher.SearchResult> hits) {
         System.out.printf("%n  %-4s  %-10s  %s%n", "Rank", "Score", "Title");
         System.out.println("  " + "-".repeat(60));
@@ -180,9 +200,9 @@ public class Main {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Arg helpers
-    // -----------------------------------------------------------------------
+    /**
+     * arg helper
+     */
     private static String getArg(String[] args, String flag, String defaultVal) {
         for (int i = 0; i < args.length - 1; i++) {
             if (args[i].equals(flag))
@@ -191,6 +211,9 @@ public class Main {
         return defaultVal;
     }
 
+    /**
+     * flag helper
+     */
     private static boolean hasFlag(String[] args, String flag) {
         for (String a : args)
             if (a.equals(flag))
@@ -219,7 +242,7 @@ public class Main {
                 [--export     <file>]  Export top 10 results to JSONL for LLM re-ranking
 
               search
-                [--index_dir  <dir>]   Lucene index directory
+                [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
                 [--clue       <str>]   Single clue to search
                 [--category   <str>]   Category string (optional)
                 [--top_k      <int>]   Number of results to return                 (default: 10)
