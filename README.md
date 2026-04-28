@@ -12,7 +12,7 @@
 │   └── wiki-example.txt
 ├── scripts/
 │   └── rerank.py
-└── src/main/java
+└── src/main/java/
     ├── Main.java          CLI entry point (index / evaluate / search)
     ├── WikiIndexer.java   Parse Wikipedia corpus → Lucene index
     ├── QueryBuilder.java  Convert Jeopardy clue → weighted Lucene query
