@@ -8,6 +8,8 @@
 ├── wiki-subset-20140602/
 ├── wiki_questions.txt
 ├── README.md
+├── example/
+│   └── wiki-example.txt
 ├── scripts/
 │   └── rerank.py
 └── src/main/java
@@ -42,7 +44,7 @@ java -jar target/jeopardy-qa-1.0.jar index
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
-java -jar target/jeopardy-qa-1.0.jar evaluate --errors
+java -jar target/jeopardy-qa-1.0SNAPSHOT.jar evaluate --errors
 ```
 
 ### 3. Interactive single-question demo

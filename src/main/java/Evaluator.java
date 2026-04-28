@@ -15,35 +15,56 @@ public class Evaluator {
 
     private static final int TOP_K = 10;
 
-    public record Question(String category, String clue, String answer) {
-    }
+    /**
+     * record one-liner creates a class with fields and getters/setters
+     *
+     * @param category the question category
+     * @param clue the question clue
+     * @param answer the question answer
+     */
+    public record Question(String category, String clue, String answer) {}
 
+    /**
+     * reads question file into a list of Question objects. questsion file is formated such that
+     * quetsions are composed in three lines (each question seperaated by a blank line)
+     *
+     * @param filepath the path to the questions file
+     */
     public static List<Question> parseQuestions(Path filepath) throws IOException {
         List<String> lines = Files.readAllLines(filepath, StandardCharsets.UTF_8);
         List<Question> questions = new ArrayList<>();
 
         int i = 0;
         while (i < lines.size()) {
-            while (i < lines.size() && lines.get(i).isBlank())
+            if (lines.get(i).isBlank()) { 
                 i++;
-            if (i >= lines.size())
-                break;
+                continue;
+            }
 
             String category = lines.get(i).strip();
+
+            // ternary protect againsst bounds if question is missing data
             String clue = (i + 1 < lines.size()) ? lines.get(i + 1).strip() : "";
             String answer = (i + 2 < lines.size()) ? lines.get(i + 2).strip() : "";
+            
             questions.add(new Question(category, clue, answer));
             i += 3;
         }
         return questions;
     }
 
+    /**
+     *
+     */
     private static String normalizeTitle(String t) {
         t = t.toLowerCase().strip().replaceAll("\\s+", " ");
         if (t.startsWith("the ")) t = t.substring(4);
         return t;
     }
 
+    /**
+     *
+     */
     private static boolean titleMatch(String predicted, String gold) {
         String p = normalizeTitle(predicted);
         String[] acceptableAnswers = gold.split("\\|");
@@ -56,14 +77,18 @@ public class Evaluator {
         }
         return false;
     }
-    
+
+    /**
+     *
+     */
     private static String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    public static void evaluate(List<Question> questions, Searcher searcher,
-            boolean useCategory, boolean errorAnalysis, Path exportPath)
+    /**
+     */
+    public static void evaluate(List<Question> questions, Searcher searcher, boolean useCategory, boolean errorAnalysis, Path exportPath)
             throws IOException {
 
         if (exportPath != null) {
@@ -159,6 +184,8 @@ public class Evaluator {
         }
     }
 
+    /**
+     */
     public static double evaluateSilent(List<Question> questions, Searcher searcher, boolean useCategory) throws IOException {
         int n = questions.size();
         double totalRR = 0.0;
@@ -182,6 +209,8 @@ public class Evaluator {
         return totalRR / n;
     }
 
+    /**
+     */
     private static String truncate(String s, int max) {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
