@@ -24,7 +24,7 @@
 
 - Java 21+
 - Maven 3.6+
-- ~4 GB RAM for indexing (256 MB RAM buffer; disk index is ~2–3 GB)
+- RAM usage during indexing depends on JVM heap settings; 256 MB RAM buffer; disk index is ~230 MB
 
 ## Build
 
