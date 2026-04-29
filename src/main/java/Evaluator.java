@@ -54,16 +54,23 @@ public class Evaluator {
     }
 
     /**
+     * clean a title by lowering its case, removing more than one white space within the 
+     * title, and removing "the"
      *
+     * @param t string to be cleaned
      */
     private static String normalizeTitle(String t) {
         t = t.toLowerCase().strip().replaceAll("\\s+", " ");
-        if (t.startsWith("the ")) t = t.substring(4);
+        if (t.startsWith("the ")) { t = t.substring(4); }
         return t;
     }
 
     /**
+     * does a fuzzy match between acceptable gold answers and predicted 
      *
+     * @param predicted the result of search
+     * @param gold the known correct answer
+     * @return true if there is a match, false otherwise
      */
     private static boolean titleMatch(String predicted, String gold) {
         String p = normalizeTitle(predicted);
@@ -79,7 +86,10 @@ public class Evaluator {
     }
 
     /**
+     * fixes back slashes that escape characters in JSON and Java
      *
+     * @param s string to fix
+     * @return a cleaned string
      */
     private static String escapeJson(String s) {
         if (s == null) return "";
@@ -87,6 +97,15 @@ public class Evaluator {
     }
 
     /**
+     * evaluate each question in the 100 question data set provided. Get the searchers results for each questions clue,
+     * check if the gold asnwer is within the search results, print out the evaluators results. also computes an
+     * error analysis and prints that info if specified in command call
+     *
+     * @param questions list of questions parsed from question file
+     * @param searcher a searcher class instance
+     * @param useCategory a flag set on commaand invocation
+     * @param errorAnalysis a flag set on command invocation
+     * @param exportPath a flag set on command invocation
      */
     public static void evaluate(List<Question> questions, Searcher searcher, boolean useCategory, boolean errorAnalysis, Path exportPath)
             throws IOException {
@@ -114,7 +133,7 @@ public class Evaluator {
             // get list top k SearchResult objects from search
             List<Searcher.SearchResult> hits = searcher.search(q.clue(), catArg, TOP_K);
 
-            // if a fuzzy match (can have 'the') will catch it
+            // check fuzzy match
             int rank = 0;
             for (int r = 0; r < hits.size(); r++) {
                 if (titleMatch(hits.get(r).title(), q.answer())) {
@@ -158,12 +177,11 @@ public class Evaluator {
                         if (hits.indexOf(res) == 4) { top5_hits += res.title(); } 
                         else { top5_hits += res.title() + ", "; }
                     }
-
                     failure.add(top5_hits);
                 } else { 
                     failure.add("");
                 }
-                
+
                 failures.add(failure);
             }
 
@@ -207,6 +225,12 @@ public class Evaluator {
     }
 
     /**
+     * used to tune the system. doesn't produce any output to the console, just returns MRR
+     *
+     * @param questions list of questions parsed from question file
+     * @param searcher a searcher class instance
+     * @param useCategory a flag set on commaand invocation
+     * @return MRR value
      */
     public static double evaluateSilent(List<Question> questions, Searcher searcher, boolean useCategory) throws IOException {
         int n = questions.size();
@@ -232,8 +256,14 @@ public class Evaluator {
     }
 
     /**
+     * shorten string for more comprehensive output
+     *
+     * @param s a string to shorten
+     * @param max the max length the string can be
+     * @return a shortened string
      */
     private static String truncate(String s, int max) {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 }
+
