@@ -111,6 +111,7 @@ public class Evaluator {
             throws IOException {
 
         if (exportPath != null) {
+            Files.createDirectory(exportPath.getParent());
             Files.deleteIfExists(exportPath);
         }
 
