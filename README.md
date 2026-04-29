@@ -66,7 +66,7 @@ java -jar target/jeopardy-qa-1.jar search \
 
 ---
 
-## Implementation Report (answers the spec's questions)
+## Implementation Report
 
 ### Indexing
 
