@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from google import genai
 
 # LLM info
-API_KEY = "AIzaSyApYEDmcc9otZCjXWvEkaDsvpHcQ3OAvLo" 
+API_KEY = "" 
 MODEL_NAME = "gemini-2.5-flash" 
 
 # FIX 2: Give the backoff more attempts to survive temporary rate limits
