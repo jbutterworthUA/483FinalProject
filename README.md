@@ -35,6 +35,8 @@ mvn package -q
 
 ## Usage
 
+### All commands should be ran from the root of the project
+
 ### 1. Index the Wikipedia corpus (one-time, ~5 min)
 
 ```bash
