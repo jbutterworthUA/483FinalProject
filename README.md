@@ -28,6 +28,8 @@
 
 ## Build
 
+### Ran from the root of the project
+
 ```bash
 mvn package -q
 # Produces: target/jeopardy-qa-1.0.jar
