@@ -54,16 +54,23 @@ public class Evaluator {
     }
 
     /**
+     * clean a title by lowering its case, removing more than one white space within the 
+     * title, and removing "the"
      *
+     * @param t string to be cleaned
      */
     private static String normalizeTitle(String t) {
         t = t.toLowerCase().strip().replaceAll("\\s+", " ");
-        if (t.startsWith("the ")) t = t.substring(4);
+        if (t.startsWith("the ")) { t = t.substring(4); }
         return t;
     }
 
     /**
+     * does a fuzzy match between acceptable gold answers and predicted 
      *
+     * @param predicted the result of search
+     * @param gold the known correct answer
+     * @return true if there is a match, false otherwise
      */
     private static boolean titleMatch(String predicted, String gold) {
         String p = normalizeTitle(predicted);
@@ -79,7 +86,10 @@ public class Evaluator {
     }
 
     /**
+     * fixes back slashes that escape characters in JSON and Java
      *
+     * @param s string to fix
+     * @return a cleaned string
      */
     private static String escapeJson(String s) {
         if (s == null) return "";
@@ -87,6 +97,15 @@ public class Evaluator {
     }
 
     /**
+     * evaluate each question in the 100 question data set provided. Get the searchers results for each questions clue,
+     * check if the gold asnwer is within the search results, print out the evaluators results. also computes an
+     * error analysis and prints that info if specified in command call
+     *
+     * @param questions list of questions parsed from question file
+     * @param searcher a searcher class instance
+     * @param useCategory a flag set on commaand invocation
+     * @param errorAnalysis a flag set on command invocation
+     * @param exportPath a flag set on command invocation
      */
     public static void evaluate(List<Question> questions, Searcher searcher, boolean useCategory, boolean errorAnalysis, Path exportPath)
             throws IOException {
@@ -98,12 +117,18 @@ public class Evaluator {
         int n = questions.size();
         int top1 = 0, top5 = 0, top10 = 0;
         double totalRR = 0.0;
-        List<String[]> failures = new ArrayList<>();
 
-        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n",
-                "#", "Rank", "Result", "Gold answer", "Predicted (rank-1)");
+        // array to store data about non-perfect results
+        List<List<String>> failures = new ArrayList<>();
+
+        System.out.println("\nResult key:");
+        System.out.println("   ✓ -> predicted matches gold");
+        System.out.println("   ~ -> gold answer in hit list");
+        System.out.println("   ✗ -> gold answer not in hit list\n");
+        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n", "#", "Rank", "Result", "Gold answer", "Predicted (rank-1)");
         System.out.println("-".repeat(90));
 
+        // calculate the reciprocal rank for each question
         for (int i = 0; i < n; i++) {
             Question q = questions.get(i);
             String catArg = useCategory ? q.category() : "";
@@ -111,7 +136,7 @@ public class Evaluator {
             // get list top k SearchResult objects from search
             List<Searcher.SearchResult> hits = searcher.search(q.clue(), catArg, TOP_K);
 
-            // if a fuzzy match (can have 'the') will catch it
+            // check fuzzy match
             int rank = 0;
             for (int r = 0; r < hits.size(); r++) {
                 if (titleMatch(hits.get(r).title(), q.answer())) {
@@ -121,6 +146,7 @@ public class Evaluator {
                 }
             }
 
+            // increment each catagory based on rank result
             if (rank == 1) {
                 top1++; top5++; top10++;
             } else if (rank <= 5) {
@@ -129,28 +155,41 @@ public class Evaluator {
                 top10++;
             }
 
+            // calculate reciprocol rank 
             double rr = rank > 0 ? 1.0 / rank : 0.0;
             totalRR += rr;
 
-            String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗");
+            // char to print in results
+            String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗"); 
+
+            // 
             String top1t = hits.isEmpty() ? "(no results)" : hits.get(0).title();
 
             System.out.printf("%-4d  %-5s  %-7s  %-35s  %s%n",
                     i + 1, rank > 0 ? rank : "-", mark, truncate(q.answer(), 35), truncate(top1t, 45));
-
+  
+            // if not a perfect result, we want to store data for the error analysis
             if (rank != 1) {
-                failures.add(new String[] {
-                        String.valueOf(i + 1), q.category(), q.clue(),
-                        q.answer(), top1t,
-                        hits.size() >= 5
-                                ? hits.subList(0, 5).stream()
-                                        .map(Searcher.SearchResult::title)
-                                        .reduce("", (a, b) -> a.isEmpty() ? b : a + ", " + b)
-                                : ""
-                });
+                ArrayList<String> failure = new ArrayList<>();
+                failure.addAll(Arrays.asList(String.valueOf(i + 1), q.category(), q.clue(), q.answer(), top1t));
+
+                // top 5 search results
+                if (hits.size() >= 5) {
+                    String top5_hits = "";
+                    for (Searcher.SearchResult res : hits.subList(0,5)) {
+                        if (hits.indexOf(res) == 4) { top5_hits += res.title(); } 
+                        else { top5_hits += res.title() + ", "; }
+                    }
+                    failure.add(top5_hits);
+                } else { 
+                    failure.add("");
+                }
+
+                failures.add(failure);
             }
 
             // Export to JSONL for Python script
+            // JSONL = JSON lines -> one JSON object per line 
             if (exportPath != null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("{\"id\":").append(i + 1)
@@ -167,6 +206,7 @@ public class Evaluator {
             }
         }
 
+        // mean reciprocal rank - average rr across all questions
         double mrr = totalRR / n;
 
         System.out.println("=".repeat(90));
@@ -177,17 +217,22 @@ public class Evaluator {
         System.out.println("=".repeat(90));
 
         if (errorAnalysis) {
-            System.out.printf("%n--- Error analysis: first %d failures ---%n%n", Math.min(10, failures.size()));
-            for (String[] f : failures.subList(0, Math.min(10, failures.size()))) {
-                System.out.printf("Q%s: [%s] %s%n", f[0], f[1], f[2]);
-                System.out.printf("      Gold : %s%n", f[3]);
-                System.out.printf("      Top-1: %s%n", f[4]);
-                System.out.printf("      Top-5: %s%n%n", f[5]);
+            System.out.printf("%n--- Error analysis: %d failures ---%n%n", failures.size());
+            for (List<String> f : failures) {
+                System.out.printf("Q%s: [%s] %s%n", f.get(0), f.get(1), f.get(2));
+                System.out.printf("      Gold : %s%n", f.get(3));
+                System.out.printf("      Top-5: %s%n%n", f.get(5));
             }
         }
     }
 
     /**
+     * used to tune the system. doesn't produce any output to the console, just returns MRR
+     *
+     * @param questions list of questions parsed from question file
+     * @param searcher a searcher class instance
+     * @param useCategory a flag set on commaand invocation
+     * @return MRR value
      */
     public static double evaluateSilent(List<Question> questions, Searcher searcher, boolean useCategory) throws IOException {
         int n = questions.size();
@@ -213,8 +258,14 @@ public class Evaluator {
     }
 
     /**
+     * shorten string for more comprehensive output
+     *
+     * @param s a string to shorten
+     * @param max the max length the string can be
+     * @return a shortened string
      */
     private static String truncate(String s, int max) {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 }
+

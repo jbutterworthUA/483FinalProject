@@ -148,42 +148,46 @@ public class Main {
     /**
      * tune subcomman 
      *
-     * used to test different k1 values
+     * used to test different k1 and b values
      *
      * @param args the command arguments given at program launch
      */
     private static void runTune(String[] args) throws Exception {
-        Path questionsFile = Path.of(getArg(args, "--questions", "questions.txt"));
+        Path questionsFile = Path.of(getArg(args, "--questions", "wiki_questions.txt"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
         boolean useCategory = !hasFlag(args, "--no_category");
 
-        System.out.println("Starting Grid Search for k1 (b is fixed at 0.20)...");
+        System.out.println("Starting search for optimal k1 and b...");
         System.out.println("  Index dir     : " + indexDir);
         System.out.println("  Questions file: " + questionsFile);
         System.out.println();
 
         List<Evaluator.Question> questions = Evaluator.parseQuestions(questionsFile);
-        
+
         double bestMrr = 0.0;
         float bestK1 = 0.0f;
+        float best_b = 0.0f;
 
-        System.out.printf("  %-10s | %-10s%n", "k1 value", "MRR");
+        System.out.printf("  %-10s | %-10s | %-10s%n", "k1 value", "b value", "MRR");
         System.out.println("  " + "-".repeat(23));
 
-        for (float k1 = 0.5f; k1 <= 2.5f; k1 += 0.1f) {
-            try (Searcher searcher = new Searcher(indexDir, k1, 0.20f)) {
+        for (float k1 = 0.0f; k1 <= 2.5f; k1 += 0.1f) {
+          for (float b = 0.0f; b <= 1; b += 0.05f)
+            try (Searcher searcher = new Searcher(indexDir, k1, b)) {
                 double mrr = Evaluator.evaluateSilent(questions, searcher, useCategory);
-                System.out.printf("  %-10.1f | %-10.4f%n", k1, mrr);
+                System.out.printf("  %-10.1f | %-10.1f | %-10.4f%n", k1, b, mrr);
 
                 if (mrr > bestMrr) {
                     bestMrr = mrr;
                     bestK1 = k1;
+                    best_b = b;
                 }
             }
         }
-        
+
         System.out.println("  " + "=".repeat(23));
         System.out.printf("  OPTIMAL k1 : %.1f%n", bestK1);
+        System.out.printf("  OPTIMAL B     : %.4f%n", best_b);
         System.out.printf("  PEAK MRR   : %.4f%n", bestMrr);
         System.out.println("  " + "=".repeat(23));
     }

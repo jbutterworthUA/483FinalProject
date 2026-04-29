@@ -8,6 +8,7 @@ import org.apache.lucene.search.*;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.regex.*;
 
 /**
  * QueryBuilder
@@ -54,7 +55,6 @@ import java.util.*;
  */
 public class QueryBuilder {
 
-    private static final float TITLE_FIELD_BOOST = 3.0f;
     private static final float PROPER_NOUN_BOOST = 3.0f;
     private static final float COMMON_TERM_BOOST = 1.0f;
     private static final float CATEGORY_TERM_BOOST = 1.5f;
@@ -79,13 +79,17 @@ public class QueryBuilder {
      * @return a Lucene Query ready to hand to IndexSearcher
      */
     public Query buildQuery(String clue, String category) throws IOException {
+        // container to keep adding criteria to
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
-        // ---- Extract Quotes --------------------------------------------
-        java.util.regex.Matcher quoteMatcher = java.util.regex.Pattern.compile("\"([^\"]+)\"").matcher(clue);
+        // Extract Quotes
+        Matcher quoteMatcher = Pattern.compile("\"([^\"]+)\"").matcher(clue);
         while (quoteMatcher.find()) {
             String phrase = quoteMatcher.group(1);
             String[] quoteWords = phrase.split("\\s+");
+
+            // specifies words that should appear next to each other in this order
+            // slop is number of words allowed between
             PhraseQuery.Builder pqBuilderContent = new PhraseQuery.Builder();
             pqBuilderContent.setSlop(2);
 
@@ -94,12 +98,14 @@ public class QueryBuilder {
             for (String qw : quoteWords) {
                 String stemmed = analyzeSingle(qw);
                 if (stemmed != null) {
+                    // add stemmed word to phrase query with relavant position
                     pqBuilderContent.add(new Term("content", stemmed), position);
                     validTokens++;
                 }
-                // FIX: Always advance position, even for stopwords, to match index gaps!
+                // FIX: Always advance position, even for stopwords, to match index gaps
                 position++;
             }
+
             // Heavily boost if we found a multi-word quote
             if (validTokens > 1) {
                 builder.add(new BoostQuery(pqBuilderContent.build(), 5.0f), BooleanClause.Occur.SHOULD);
@@ -107,8 +113,10 @@ public class QueryBuilder {
 
         }
 
-        // ---- Clue terms ------------------------------------------------
+        // Clue terms
         String[] words = clue.split("\\s+");
+
+        // parallel lists to track info
         List<String> analyzedWords = new ArrayList<>();
         List<Boolean> isCapitalized = new ArrayList<>();
 
@@ -140,9 +148,7 @@ public class QueryBuilder {
             // they do not dictate the Wikipedia page title.
 
             // Content clause (base term boost)
-            Query contentQ = new BoostQuery(
-                    new TermQuery(new Term("content", stemmed)),
-                    termBoost);
+            Query contentQ = new BoostQuery(new TermQuery(new Term("content", stemmed)), termBoost);
             builder.add(contentQ, BooleanClause.Occur.SHOULD);
         }
 
@@ -165,7 +171,7 @@ public class QueryBuilder {
             builder.add(new BoostQuery(contentPqBuilder.build(), phraseBoost), BooleanClause.Occur.SHOULD);
         }
         
-        // ---- Category terms --------------------------------------------
+        // Category terms 
         if (category != null && !category.isBlank()) {
             for (String word : category.split("\\s+")) {
                 String stemmed = analyzeSingle(word);
@@ -176,9 +182,7 @@ public class QueryBuilder {
 
                 // FIX: Removed Category Title clause. Categories are thematic
                 // and almost never appear in the actual Wikipedia page title.
-                Query catContentQ = new BoostQuery(
-                        new TermQuery(new Term("content", stemmed)),
-                        CATEGORY_TERM_BOOST);
+                Query catContentQ = new BoostQuery(new TermQuery(new Term("content", stemmed)), CATEGORY_TERM_BOOST);
                 builder.add(catContentQ, BooleanClause.Occur.SHOULD);
             }
         }
@@ -189,11 +193,18 @@ public class QueryBuilder {
     /**
      * Run a single word through EnglishAnalyzer and return the stemmed token,
      * or null if the analyser filtered it out (stopword, too short, etc.).
+     *
+     * @param word word to be analyzed by EnglishAnalyzer
+     * @return the tokenized word or null if analyzer returns nothing
      */
     private String analyzeSingle(String word) throws IOException {
+        // wraps word in stream so analyzer can process it
         try (TokenStream ts = analyzer.tokenStream("_", new StringReader(word))) {
+            // add a handle to aactually grab the text of each token
             CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
+            // set the token stream to the beginning
             ts.reset();
+            // if a token is found, return it
             if (ts.incrementToken()) {
                 String token = attr.toString();
                 ts.end();
@@ -203,4 +214,6 @@ public class QueryBuilder {
             return null;
         }
     }
+
 }
+
