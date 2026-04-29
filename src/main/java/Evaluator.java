@@ -121,8 +121,11 @@ public class Evaluator {
         // array to store data about non-perfect results
         List<List<String>> failures = new ArrayList<>();
 
-        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n",
-                "#", "Rank", "Result", "Gold answer", "Predicted (rank-1)");
+        System.out.println("\nResult key:");
+        System.out.println("   ✓ -> predicted matches gold");
+        System.out.println("   ~ -> gold answer in hit list");
+        System.out.println("   ✗ -> gold answer not in hit list\n");
+        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n", "#", "Rank", "Result", "Gold answer", "Predicted (rank-1)");
         System.out.println("-".repeat(90));
 
         // calculate the reciprocal rank for each question
@@ -156,7 +159,7 @@ public class Evaluator {
             double rr = rank > 0 ? 1.0 / rank : 0.0;
             totalRR += rr;
 
-            // char to print in results 
+            // char to print in results
             String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗"); 
 
             // 
@@ -214,11 +217,10 @@ public class Evaluator {
         System.out.println("=".repeat(90));
 
         if (errorAnalysis) {
-            System.out.printf("%n--- Error analysis: first %d failures ---%n%n", Math.min(10, failures.size()));
-            for (List<String> f : failures.subList(0, Math.min(10, failures.size()))) {
+            System.out.printf("%n--- Error analysis: %d failures ---%n%n", failures.size());
+            for (List<String> f : failures) {
                 System.out.printf("Q%s: [%s] %s%n", f.get(0), f.get(1), f.get(2));
                 System.out.printf("      Gold : %s%n", f.get(3));
-                System.out.printf("      Top-1: %s%n", f.get(4));
                 System.out.printf("      Top-5: %s%n%n", f.get(5));
             }
         }

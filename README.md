@@ -70,7 +70,7 @@ java -jar target/jeopardy-qa-1.jar search \
 
 ### Indexing
 
-**IR system: Apache Lucene 9.10 with BM25F**
+**IR system: Apache Lucene 10.4 with BM25F**
 
 Lucene is the industry-standard IR library used in Elasticsearch, Solr, and
 many production search systems.  BM25 (Best Match 25) is the default scoring
@@ -85,8 +85,8 @@ model since Lucene 6 and outperforms classical TF-IDF by:
 Each of the 80 flat files contains thousands of pages separated by
 `[[PageTitle]]` at the start of a line (regex: `^\[\[(.+?)\]\]\s*$`).
 We scan for all markers, then slice the raw text between consecutive markers
-to form page bodies.  Redirect pages (first line matches `#REDIRECT`) are
-skipped — they hold no unique content and would add ~20% noisy documents.
+to form page bodies.  **Redirect pages (first line matches `#REDIRECT`) are
+skipped — they hold no unique content and add ~40% noisy documents.**
 
 Each page becomes one Lucene `Document` with three fields:
 
@@ -103,6 +103,7 @@ Raw Wikipedia text contains several categories of markup noise:
 | Issue | Example | Solution |
 |---|---|---|
 | Template calls | `{{Infobox person\|...}}` | Remove entirely (regex, DOTALL) |
+| Wikitext tags | `[tpl]...[/tpl]` | Remove entirely |
 | Citation tags | `<ref>Smith 2001</ref>` | Remove entirely |
 | Piped links | `[[Albert Einstein\|Einstein]]` | Keep display text (`$1`) |
 | Plain links | `[[Abraham Lincoln]]` | Keep link text |
@@ -114,7 +115,7 @@ Raw Wikipedia text contains several categories of markup noise:
 | Punctuation runs | `---`, `~~~~`, `===` | Collapse to single space |
 
 The cleaning is a single sequential regex pass (~10 patterns) which processes
-280,000 pages fast enough for a one-time index build.
+140,000 pages fast enough for a one-time index build.
 
 ### Analyser: EnglishAnalyzer
 
@@ -177,7 +178,7 @@ query terms while not disqualifying documents that miss one or two rare terms.
 Jeopardy answers are Wikipedia titles by construction.  A document whose
 title IS the answer should score higher than one that merely *mentions* the
 answer in its body.  The `3.0×` title field boost is applied via `BoostQuery`
-at search time (Lucene 9 does not support index-time per-field boosts).
+at search time.
 
 ### Evaluation metrics
 
@@ -188,18 +189,4 @@ at search time (Lucene 9 does not support index-time per-field boosts).
 | Top-10 accuracy | fraction where rank ≤ 10 | Correct answer in top 10 |
 | MRR | mean(1/rank); rank=∞ if not found | Rewards answers found early |
 
-Expected performance with default settings: **~55–65% top-1**, **~75–80% top-5**.
 
-### Potential extensions
-
-1. **Query expansion via WordNet** — for each content noun in the clue, add
-   its WordNet synonyms to the query at a reduced boost weight.
-2. **Two-pass retrieval** — use BM25 for a fast top-50 candidate set, then
-   re-rank with a cross-encoder (e.g., BERT fine-tuned on MS-MARCO).
-3. **Category-to-Wikipedia-category mapping** — "U.S. PRESIDENTS" → filter
-   candidates to pages in the Wikipedia category "Presidents of the United States".
-4. **BM25 parameter tuning** — grid-search k1 ∈ {0.8, 1.0, 1.2, 1.5, 2.0}
-   and b ∈ {0.5, 0.6, 0.75, 0.9} on a held-out dev set of 20 questions.
-5. **Pseudo-relevance feedback** — take the top-3 BM25 hits, extract their
-   most distinctive terms (by tf-idf relative to the full collection), add
-   those terms to the query, and re-run.

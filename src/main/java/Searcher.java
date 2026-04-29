@@ -26,16 +26,21 @@ public class Searcher implements Closeable {
     private final QueryBuilder queryBuilder;
 
     /**
-     * Open an existing Lucene index with default BM25 parameters.
+     * constructor used to open an existing Lucene index with default BM25 parameters. 
+     * used after tuning
+     *
+     * @param indexDir the path to the lucene index
      */
     public Searcher(Path indexDir) throws IOException {
-        // this(indexDir, 1.2f, 0.75f);
-        // FIX: Lowered 'b' from 0.75f to 0.20f to stop penalizing long articles
-        this(indexDir, 1.2f, 0.20f);
+        // DEFAULT k = 1.2f, b = 0.75f;
+        // 1st  FIX: Lowered 'b' from 0.75f to 0.20f to stop penalizing long articles
+        // 2nd  FIX  Lowered 'b' again from 0.20f to 0.0f and lowered k1 to 0.8f
+        this(indexDir, 0.8f, 0.0f);
     }
 
     /**
-     * Open an existing Lucene index with custom BM25 k1 and b parameters.
+     * constructor to open an existing Lucene index with custom BM25 k1 and b parameters. 
+     * used for tuning
      *
      * @param k1 term-frequency saturation (typical range 0.5 – 2.0)
      * @param b  length normalisation (0 = none, 1 = full)
@@ -50,21 +55,29 @@ public class Searcher implements Closeable {
 
     /**
      * Return the top-k (title, score) pairs for the given clue.
+     *
+     * @param clue the question clue
+     * @param category the catgeory of the question
+     * @param topK the number of result to return
      */
-    public List<SearchResult> search(String clue, String category, int topK)
-            throws IOException {
-        Query q = queryBuilder.buildQuery(clue, category);
-        TopDocs hits = searcher.search(q, topK);
+    public List<SearchResult> search(String clue, String category, int topK) throws IOException {
+        Query q = this.queryBuilder.buildQuery(clue, category);
+        TopDocs hits = this.searcher.search(q, topK);
 
         List<SearchResult> results = new ArrayList<>();
         for (ScoreDoc sd : hits.scoreDocs) {
-            String title = searcher.storedFields().document(sd.doc).get("title_raw");
+            String title = this.searcher.storedFields().document(sd.doc).get("title_raw");
             results.add(new SearchResult(title, sd.score));
         }
         return results;
     }
 
-    /** Return the single best-matching Wikipedia title. */
+    /** 
+     * Return the single best-matching Wikipedia title
+     *
+     * @param clue the clue for a question
+     * @param category the category for a question
+     */
     public String predict(String clue, String category) throws IOException {
         List<SearchResult> hits = search(clue, category, 1);
         return hits.isEmpty() ? "" : hits.get(0).title();
@@ -77,6 +90,9 @@ public class Searcher implements Closeable {
 
     /**
      * Simple result record
+     *
+     * @param title the title of a doc
+     * @param score the score of a doc
      */
     public record SearchResult(String title, float score) {}
 
