@@ -148,12 +148,10 @@ public class Evaluator {
             }
 
             // increment each catagory based on rank result
-            if (rank == 1) {
-                top1++; top5++; top10++;
-            } else if (rank <= 5) {
-                top5++; top10++;
-            } else if (rank <= 10) {
-                top10++;
+            if (rank > 0) {
+                if (rank == 1)     { top1++;  }
+                if (rank <= 5)     { top5++;  }
+                if (rank <= TOP_K) { top10++; }
             }
 
             // calculate reciprocol rank 
