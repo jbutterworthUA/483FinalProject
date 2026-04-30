@@ -1,4 +1,4 @@
-# Jeopardy QA System — Lucene Implementation
+# Jeopardy QA System — Lucene + LLM Implementation
 
 ## Project Structure
 
@@ -22,43 +22,82 @@
 
 ## Requirements
 
+- Python X.XX (+requirements.txt)
 - Java 21+
 - Maven 3.6+
 - RAM usage during indexing depends on JVM heap settings; 256 MB RAM buffer; disk index is ~230 MB
 
 ## Build
 
-### Ran from the root of the project
+**ran from the root of the project**
+
+1. **Build Maven project**
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.jar
+# produces: target/jeopardy-qa-1.jar
 ```
 
-## Usage
+2. **Create Python virtual environment**
 
-### All commands should be ran from the root of the project
+        python3 -m venv .venv
 
-### 1. Index the Wikipedia corpus (one-time, ~5 min)
+    **Activate venv**
+
+    - macOS/Linux:
+
+          source .venv/bin/activate
+
+    - Windows:
+
+          .venv\Scripts\activate
+ 
+   **Install dependencies**
+
+       pip install -r requirements.txt
+
+5. **Set environment variables**
+
+    - create a .env file in root directory
+    - use .env.example as a template
+
+## Run
+
+**ran from the root of the project**
+
+1. **Index the Wikipedia corpus (one-time, ~5 min)**
 
 ```bash
 java -jar target/jeopardy-qa-1.jar index
+# produces wiki_index/ 
 ```
 
-### 2. Evaluate on the 100 Jeopardy questions
+2. **Evaluate on the 100 Jeopardy questions**
 
 ```bash
 java -jar target/jeopardy-qa-1.jar evaluate --errors
+# produces results/results.jsonl
 ```
 
-### 3. Interactive single-question demo
+3. **Run the LLM reranking script (~5 min)**
+
+```bash
+python3 scripts/rerank.py
+# produces results/reranked_results.jsonl
+```
+
+## Other interactive commands
+
+**ran from the root of the project**
+
+#### Interactive single-question demo
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search
-# Then type category and clue at the prompts.
+# then type category and clue at the prompts.
 ```
 
-### 4. Single clue from command line
+#### Single clue from command line
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search \
@@ -70,7 +109,7 @@ java -jar target/jeopardy-qa-1.jar search \
 
 ## Implementation Report
 
-### Indexing
+#### **Indexing**
 
 **IR system: Apache Lucene 10.4 with BM25F**
 
@@ -98,7 +137,7 @@ Each page becomes one Lucene `Document` with three fields:
 | `title`     | TextField   | Yes | No | Boosted match on title |
 | `content`   | TextField   | Yes | No | Match on page body |
 
-### Wikitext cleaning (Wikipedia-specific issues)
+#### **Wikitext cleaning (Wikipedia-specific issues)**
 
 Raw Wikipedia text contains several categories of markup noise:
 
@@ -119,7 +158,7 @@ Raw Wikipedia text contains several categories of markup noise:
 The cleaning is a single sequential regex pass (~10 patterns) which processes
 140,000 pages fast enough for a one-time index build.
 
-### Analyser: EnglishAnalyzer
+#### **Analyser: EnglishAnalyzer**
 
 Lucene's built-in `EnglishAnalyzer` applies this token filter chain:
 
@@ -137,7 +176,7 @@ Lemmatisation (returning dictionary base forms) would be slightly more precise
 but requires part-of-speech disambiguation and is significantly slower.  For
 a corpus of this size, Porter stemming gives a better speed–accuracy trade-off.
 
-### Query building (QueryBuilder.java)
+#### Query building (QueryBuilder.java)
 
 A raw Jeopardy clue is a full sentence, not a keyword query.  Submitting the
 whole sentence to Lucene hurts precision because:
@@ -182,7 +221,7 @@ title IS the answer should score higher than one that merely *mentions* the
 answer in its body.  The `3.0×` title field boost is applied via `BoostQuery`
 at search time.
 
-### Evaluation metrics
+#### **Evaluation metrics**
 
 | Metric | Formula | What it measures |
 |---|---|---|

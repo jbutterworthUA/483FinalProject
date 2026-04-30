@@ -21,7 +21,7 @@ load_dotenv()
 
 # LLM info
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
-MODEL_NAME = "gemini-2.5-pro" 
+MODEL_NAME = "gemini-2.5-flash" 
 
 MAX_WORKERS = 4
 MAX_RETRIES = 6  
@@ -228,7 +228,7 @@ def main():
             }
         )
 
-    print(f"Begin LLM Re-ranking of {len(rerank_eligible)} query candidate answer sets...\n")
+    print(f"Begin LLM Re-ranking of {len(rerank_eligible)} query candidate answer sets (model: " + MODEL_NAME + ")...\n")
     print(f"{'Q#':<5} | {'Old Rank':<10} | {'New Rank':<10} | {'LLM Choice'}")
     print("-" * 75)
 
