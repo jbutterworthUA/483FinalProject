@@ -68,6 +68,9 @@ public class Evaluator {
     /**
      * does a fuzzy match between acceptable gold answers and predicted 
      *
+     * NOTE could potentially tighten this matching. right now it could bring in a bunch
+     * of false positives
+     *
      * @param predicted the result of search
      * @param gold the known correct answer
      * @return true if there is a match, false otherwise
