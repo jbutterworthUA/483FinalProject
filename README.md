@@ -36,7 +36,7 @@
     ```bash
     mvn package -q
     ```
-    <sup> • produces: target/jeopardy-qa-1.jar</sup>
+    <sup>produces: target/jeopardy-qa-1.jar</sup>
 
 2. **Create Python virtual environment**
 
