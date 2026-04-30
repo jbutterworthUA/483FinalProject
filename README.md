@@ -31,14 +31,14 @@
 
 **ran from the root of the project**
 
-1. **Build Maven project**
+### 1. **Build Maven project**
 
 ```bash
 mvn package -q
 # produces: target/jeopardy-qa-1.jar
 ```
 
-2. **Create Python virtual environment**
+### 2. **Create Python virtual environment**
 
        python3 -m venv .venv
 
@@ -56,7 +56,7 @@ mvn package -q
 
        pip install -r requirements.txt
 
-5. **Set environment variables**
+### 5. **Set environment variables**
 
     - create a .env file in root directory
     - use .env.example as a template
