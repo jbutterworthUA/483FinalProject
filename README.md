@@ -32,10 +32,10 @@
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.jar
+# produces: target/jeopardy-qa-1.jar
 ```
 
-## Usage
+## Run
 
 ### All commands should be ran from the root of the project
 
@@ -43,22 +43,33 @@ mvn package -q
 
 ```bash
 java -jar target/jeopardy-qa-1.jar index
+# produces wiki_index/ 
 ```
 
 ### 2. Evaluate on the 100 Jeopardy questions
 
 ```bash
 java -jar target/jeopardy-qa-1.jar evaluate --errors
+# produces results/results.jsonl
 ```
 
-### 3. Interactive single-question demo
+### 3. Run the LLM reranking script
+
+```bash
+python3 scripts/rerank.py
+# produces results/reranked_results.jsonl
+```
+
+## Other interactive commands
+
+### Interactive single-question demo
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search
-# Then type category and clue at the prompts.
+# then type category and clue at the prompts.
 ```
 
-### 4. Single clue from command line
+### Single clue from command line
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search \
