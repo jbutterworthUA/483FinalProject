@@ -1,4 +1,4 @@
-# Jeopardy QA System — Lucene Implementation
+# Jeopardy QA System — Lucene + LLM Implementation
 
 ## Project Structure
 
@@ -79,7 +79,7 @@ java -jar target/jeopardy-qa-1.jar evaluate --errors
 # produces results/results.jsonl
 ```
 
-3. **Run the LLM reranking script**
+3. **Run the LLM reranking script (~5 min)**
 
 ```bash
 python3 scripts/rerank.py
