@@ -21,7 +21,8 @@ load_dotenv()
 
 # LLM info
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
-MODEL_NAME = "gemini-2.5-flash" 
+# MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.5-pro"
 
 MAX_WORKERS = 4
 MAX_RETRIES = 6  
@@ -230,7 +231,7 @@ def main():
             }
         )
 
-    print(f"Begin LLM Re-ranking of {len(rerank_eligible)} query candidate answer sets (model: " + MODEL_NAME + ")...\n")
+    print(f"Begin LLM reranking of {len(rerank_eligible)} query candidate answer sets (model: " + MODEL_NAME + ")...\n")
     print(f"{'Q#':<5} | {'Old Rank':<10} | {'New Rank':<10} | {'LLM Choice'}")
     print("-" * 75)
 
@@ -252,7 +253,7 @@ def main():
 
     n = len(results)
     print("\n" + "=" * 50)
-    print("RE-RANKING COMPLETE")
+    print("RERANKING COMPLETE")
     print("=" * 50)
     print(f"Baseline Lucene MRR : {sum(r['rr_before'] for r in results)/n:.4f}")
     print(f"New LLM MRR         : {sum(r['rr_after'] for r in results)/n:.4f}")
