@@ -22,22 +22,44 @@
 
 ## Requirements
 
+- Python X.XX (+requirements.txt)
 - Java 21+
 - Maven 3.6+
 - RAM usage during indexing depends on JVM heap settings; 256 MB RAM buffer; disk index is ~230 MB
 
 ## Build
 
-### Ran from the root of the project
+**ran from the root of the project**
+
+1. **Build Maven project**
 
 ```bash
 mvn package -q
 # produces: target/jeopardy-qa-1.jar
 ```
 
+2. Create Python virtual environment
+
+```bash
+pyhton3 -m venv .venv
+# produces .venv
+```
+
+MacOS/Linux: ```source .venv/bin/activate```
+
+Windows: ```.venv\Scripts\activate```
+
+```bash
+pip install -r requirements.txt
+```
+
+3. set up environment variables
+
+
+
 ## Run
 
-### All commands should be ran from the root of the project
+**ran from the root of the project**
 
 ### 1. Index the Wikipedia corpus (one-time, ~5 min)
 
@@ -61,6 +83,8 @@ python3 scripts/rerank.py
 ```
 
 ## Other interactive commands
+
+**ran from the root of the project**
 
 ### Interactive single-question demo
 
