@@ -40,7 +40,7 @@ mvn package -q
 
 2. **Create Python virtual environment**
 
-      python3 -m venv .venv
+        python3 -m venv .venv
 
     **Activate venv**
 
@@ -65,21 +65,21 @@ mvn package -q
 
 **ran from the root of the project**
 
-### 1. Index the Wikipedia corpus (one-time, ~5 min)
+1. Index the Wikipedia corpus (one-time, ~5 min)
 
 ```bash
 java -jar target/jeopardy-qa-1.jar index
 # produces wiki_index/ 
 ```
 
-### 2. Evaluate on the 100 Jeopardy questions
+2. Evaluate on the 100 Jeopardy questions
 
 ```bash
 java -jar target/jeopardy-qa-1.jar evaluate --errors
 # produces results/results.jsonl
 ```
 
-### 3. Run the LLM reranking script
+3. Run the LLM reranking script
 
 ```bash
 python3 scripts/rerank.py
