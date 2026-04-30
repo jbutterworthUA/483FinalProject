@@ -35,15 +35,15 @@
 
     ```bash
     mvn package -q
-    # produces: target/jeopardy-qa-1.jar
     ```
+    produces: target/jeopardy-qa-1.jar
 
 2. **Create Python virtual environment**
 
     ```bash
     python3 -m venv .venv
-    # produces .venv/
     ```
+    produces .venv/
 
     **Activate .venv**
 
@@ -78,22 +78,22 @@
 
 ```bash
 java -jar target/jeopardy-qa-1.jar index
-# produces wiki_index/ 
 ```
+produces wiki_index/ 
 
 2. **Evaluate on the 100 Jeopardy questions**
 
 ```bash
 java -jar target/jeopardy-qa-1.jar evaluate --errors
-# produces results/results.jsonl
 ```
+produces results/results.jsonl
 
 3. **Run the LLM reranking script (~5 min)**
 
 ```bash
 python3 scripts/rerank.py
-# produces results/reranked_results.jsonl
 ```
+produces results/reranked_results.jsonl
 
 ## Other interactive commands
 
@@ -103,8 +103,8 @@ python3 scripts/rerank.py
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search
-# then type category and clue at the prompts.
 ```
+then type category and clue at the prompts.
 
 #### Single clue from command line
 
