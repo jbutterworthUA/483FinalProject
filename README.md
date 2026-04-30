@@ -42,6 +42,8 @@
 
     ```bash
     python3 -m venv .venv
+    ```
+    ```bash
     # produces .venv/
     ```
 
