@@ -33,10 +33,10 @@
 
 1. **Build Maven project**
 
-```bash
-mvn package -q
-# produces: target/jeopardy-qa-1.jar
-```
+    ```bash
+    mvn package -q
+    # produces: target/jeopardy-qa-1.jar
+    ```
 
 2. **Create Python virtual environment**
 
