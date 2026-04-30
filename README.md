@@ -109,7 +109,7 @@ java -jar target/jeopardy-qa-1.jar search \
 
 ## Implementation Report
 
-#### Indexing
+#### **Indexing**
 
 **IR system: Apache Lucene 10.4 with BM25F**
 
@@ -137,7 +137,7 @@ Each page becomes one Lucene `Document` with three fields:
 | `title`     | TextField   | Yes | No | Boosted match on title |
 | `content`   | TextField   | Yes | No | Match on page body |
 
-#### Wikitext cleaning (Wikipedia-specific issues)
+#### **Wikitext cleaning (Wikipedia-specific issues)**
 
 Raw Wikipedia text contains several categories of markup noise:
 
@@ -158,7 +158,7 @@ Raw Wikipedia text contains several categories of markup noise:
 The cleaning is a single sequential regex pass (~10 patterns) which processes
 140,000 pages fast enough for a one-time index build.
 
-#### Analyser: EnglishAnalyzer
+#### **Analyser: EnglishAnalyzer**
 
 Lucene's built-in `EnglishAnalyzer` applies this token filter chain:
 
@@ -221,7 +221,7 @@ title IS the answer should score higher than one that merely *mentions* the
 answer in its body.  The `3.0×` title field boost is applied via `BoostQuery`
 at search time.
 
-#### Evaluation metrics
+#### **Evaluation metrics**
 
 | Metric | Formula | What it measures |
 |---|---|---|
