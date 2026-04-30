@@ -32,7 +32,7 @@
 
 ```bash
 mvn package -q
-# Produces: target/jeopardy-qa-1.0.jar
+# Produces: target/jeopardy-qa-1.jar
 ```
 
 ## Usage
