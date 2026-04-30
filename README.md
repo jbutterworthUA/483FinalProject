@@ -38,24 +38,28 @@ mvn package -q
 # produces: target/jeopardy-qa-1.jar
 ```
 
-2. Create Python virtual environment
+2. **Create Python virtual environment**
 
-```bash
-pyhton3 -m venv .venv
-# produces .venv
-```
+       python3 -m venv .venv
 
-MacOS/Linux: ```source .venv/bin/activate```
+    **Activate venv**
 
-Windows: ```.venv\Scripts\activate```
+    - macOS/Linux:
 
-```bash
-pip install -r requirements.txt
-```
+          source .venv/bin/activate
 
-3. set up environment variables
+    - Windows:
 
+          .venv\Scripts\activate
+ 
+   **Install dependencies**
 
+       pip install -r requirements.txt
+
+5. **Set environment variables**
+
+    - create a .env file in root directory
+    - use .env.example as a template
 
 ## Run
 
