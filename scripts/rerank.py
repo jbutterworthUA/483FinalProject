@@ -22,7 +22,8 @@ load_dotenv()
 # LLM info
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
 # MODEL_NAME = "gemini-2.5-flash"
-MODEL_NAME = "gemini-2.5-pro"
+MODEL_NAME = "gemma-4-31b-it"
+# MODEL_NAME = "gemini-2.5-pro"
 
 MAX_WORKERS = 4
 MAX_RETRIES = 6  
