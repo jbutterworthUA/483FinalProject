@@ -103,8 +103,8 @@ python3 scripts/rerank.py
 
 ```bash
 java -jar target/jeopardy-qa-1.jar search
-# then type category and clue at the prompts.
 ```
+then type category and clue at the prompts.
 
 #### Single clue from command line
 
