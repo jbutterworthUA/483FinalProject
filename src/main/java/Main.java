@@ -66,28 +66,26 @@ public class Main {
      *
      * --questions optional flag to specify path to questions
      * --index_dir optional flag to specify path to the created index
+     * --export optional flag to specify path to store results
+     *
+     * --no_category optional flag to specifcy not using categories in queries
+     * --errors optional flag to display all incorrectly answered questions
      *
      * @param args the command arguments given at program launch
      */
     private static void runEvaluate(String[] args) throws Exception {
         Path questionsFile = Path.of(getArg(args, "--questions", "wiki_questions.txt"));
         Path indexDir = Path.of(getArg(args, "--index_dir", "wiki_index"));
+        Path exportPath = Path.of(getArg(args, "--export", "results/results.jsonl"));
 
         boolean useCategory = !hasFlag(args, "--no_category");
         boolean errorAnalysis = hasFlag(args, "--errors");
-        
-        Path exportPath = null;
-        if (hasFlag(args, "--export")) {
-            exportPath = Path.of(getArg(args, "--export", "results/results.jsonl"));
-        }
 
         System.out.println("Evaluating Jeopardy QA system");
         System.out.println("  Index dir     : " + indexDir);
         System.out.println("  Questions file: " + questionsFile);
         System.out.println("  Use category  : " + useCategory);
-        if (exportPath != null) {
-            System.out.println("  Exporting to  : " + exportPath);
-        }
+        System.out.println("  Exporting to  : " + exportPath);
         System.out.println();
 
         List<Evaluator.Question> questions = Evaluator.parseQuestions(questionsFile);
