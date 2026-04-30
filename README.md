@@ -40,21 +40,30 @@
 
 2. **Create Python virtual environment**
 
-        python3 -m venv .venv
+    ```bash
+    python3 -m venv .venv
+    # produces .venv/
+    ```
 
-    **Activate venv**
+    **Activate .venv**
 
-    - macOS/Linux:
+    - MacOS/Linux:
 
-          source .venv/bin/activate
+        ```bash
+        source .venv/bin/activate
+        ```
 
     - Windows:
 
-          .venv\Scripts\activate
- 
+        ```bash
+        .venv\Scripts\activate
+        ```
+
    **Install dependencies**
 
-       pip install -r requirements.txt
+      ```bash
+      pip install -r requirements.txt
+      ```
 
 5. **Set environment variables**
 
