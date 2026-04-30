@@ -67,8 +67,8 @@
 
 5. **Set environment variables**
 
-   - create a .env file in root directory
-   - use .env.example as a template
+    - create a .env file in root directory
+    - use .env.example as a template
 
 ## Run
 
