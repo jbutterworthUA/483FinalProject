@@ -41,8 +41,7 @@
 2. **Create Python virtual environment**
 
     ```bash
-    python3 -m venv .venv
-    # produces .venv/
+    python3 -m venv .venv 
     ```
 
     **Activate .venv**
@@ -78,22 +77,22 @@
 
 ```bash
 java -jar target/jeopardy-qa-1.jar index
-# produces wiki_index/ 
 ```
+<sup>produces wiki_index/</sup> 
 
 2. **Evaluate on the 100 Jeopardy questions**
 
 ```bash
 java -jar target/jeopardy-qa-1.jar evaluate --errors
-# produces results/results.jsonl
 ```
+<sup>produces results/results.jsonl</sup>
 
 3. **Run the LLM reranking script (~5 min)**
 
 ```bash
 python3 scripts/rerank.py
-# produces results/reranked_results.jsonl
 ```
+<sup>produces results/reranked_results.jsonl</sup>
 
 ## Other interactive commands
 
