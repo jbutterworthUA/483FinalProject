@@ -192,6 +192,8 @@ def question_correct(item):
 def main():
     """parallel main function that manages MAX_WORKERS who each send an API request to 
     Gemini
+
+    writes result to results/reranked_results.jsonl
     """
     print("Loading Lucene predictions...")
     with open("results/results.jsonl", "r", encoding="utf-8") as f:
@@ -255,6 +257,10 @@ def main():
     print(f"Baseline Lucene MRR : {sum(r['rr_before'] for r in results)/n:.4f}")
     print(f"New LLM MRR         : {sum(r['rr_after'] for r in results)/n:.4f}")
     print(f"New Top-1 Accuracy  : {sum(r['top1'] for r in results)/n*100:.1f}%")
+
+    # write results to .jsonl
+    with open("results/reranked_results.jsonl", "w+") as f:
+        json.dump(results, f)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@
 
 ## Requirements
 
-- Python X.XX (+requirements.txt)
+- Python 3.14 (+requirements.txt)
 - Java 21+
 - Maven 3.6+
 - RAM usage during indexing depends on JVM heap settings; 256 MB RAM buffer; disk index is ~230 MB
