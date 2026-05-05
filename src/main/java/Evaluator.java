@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -19,14 +18,17 @@ public class Evaluator {
      * record one-liner creates a class with fields and getters/setters
      *
      * @param category the question category
-     * @param clue the question clue
-     * @param answer the question answer
+     * @param clue     the question clue
+     * @param answer   the question answer
      */
-    public record Question(String category, String clue, String answer) {}
+    public record Question(String category, String clue, String answer) {
+    }
 
     /**
-     * reads question file into a list of Question objects. questsion file is formated such that
-     * quetsions are composed in three lines (each question seperaated by a blank line)
+     * reads question file into a list of Question objects. questsion file is
+     * formated such that
+     * quetsions are composed in three lines (each question seperaated by a blank
+     * line)
      *
      * @param filepath the path to the questions file
      */
@@ -36,7 +38,7 @@ public class Evaluator {
 
         int i = 0;
         while (i < lines.size()) {
-            if (lines.get(i).isBlank()) { 
+            if (lines.get(i).isBlank()) {
                 i++;
                 continue;
             }
@@ -46,7 +48,7 @@ public class Evaluator {
             // ternary protect againsst bounds if question is missing data
             String clue = (i + 1 < lines.size()) ? lines.get(i + 1).strip() : "";
             String answer = (i + 2 < lines.size()) ? lines.get(i + 2).strip() : "";
-            
+
             questions.add(new Question(category, clue, answer));
             i += 3;
         }
@@ -54,25 +56,29 @@ public class Evaluator {
     }
 
     /**
-     * clean a title by lowering its case, removing more than one white space within the 
+     * clean a title by lowering its case, removing more than one white space within
+     * the
      * title, and removing "the"
      *
      * @param t string to be cleaned
      */
     private static String normalizeTitle(String t) {
         t = t.toLowerCase().strip().replaceAll("\\s+", " ");
-        if (t.startsWith("the ")) { t = t.substring(4); }
+        if (t.startsWith("the ")) {
+            t = t.substring(4);
+        }
         return t;
     }
 
     /**
-     * does a fuzzy match between acceptable gold answers and predicted 
+     * does a fuzzy match between acceptable gold answers and predicted
      *
-     * NOTE could potentially tighten this matching. right now it could bring in a bunch
+     * NOTE could potentially tighten this matching. right now it could bring in a
+     * bunch
      * of false positives
      *
      * @param predicted the result of search
-     * @param gold the known correct answer
+     * @param gold      the known correct answer
      * @return true if there is a match, false otherwise
      */
     private static boolean titleMatch(String predicted, String gold) {
@@ -95,22 +101,26 @@ public class Evaluator {
      * @return a cleaned string
      */
     private static String escapeJson(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     /**
-     * evaluate each question in the 100 question data set provided. Get the searchers results for each questions clue,
-     * check if the gold asnwer is within the search results, print out the evaluators results. also computes an
+     * evaluate each question in the 100 question data set provided. Get the
+     * searchers results for each questions clue,
+     * check if the gold asnwer is within the search results, print out the
+     * evaluators results. also computes an
      * error analysis and prints that info if specified in command call
      *
-     * @param questions list of questions parsed from question file
-     * @param searcher a searcher class instance
-     * @param useCategory a flag set on commaand invocation
+     * @param questions     list of questions parsed from question file
+     * @param searcher      a searcher class instance
+     * @param useCategory   a flag set on commaand invocation
      * @param errorAnalysis a flag set on command invocation
-     * @param exportPath a flag set on command invocation
+     * @param exportPath    a flag set on command invocation
      */
-    public static void evaluate(List<Question> questions, Searcher searcher, boolean useCategory, boolean errorAnalysis, Path exportPath)
+    public static void evaluate(List<Question> questions, Searcher searcher, boolean useCategory, boolean errorAnalysis,
+            Path exportPath)
             throws IOException {
 
         if (exportPath != null) {
@@ -129,7 +139,8 @@ public class Evaluator {
         System.out.println("   ✓ -> predicted matches gold");
         System.out.println("   ~ -> gold answer in hit list");
         System.out.println("   ✗ -> gold answer not in hit list\n");
-        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n", "#", "Rank", "Result", "Gold answer", "Predicted (rank-1)");
+        System.out.printf("%n%-4s  %-5s  %-7s  %-35s  %s%n", "#", "Rank", "Result", "Gold answer",
+                "Predicted (rank-1)");
         System.out.println("-".repeat(90));
 
         // calculate the reciprocal rank for each question
@@ -152,24 +163,30 @@ public class Evaluator {
 
             // increment each catagory based on rank result
             if (rank > 0) {
-                if (rank == 1)     { top1++;  }
-                if (rank <= 5)     { top5++;  }
-                if (rank <= TOP_K) { top10++; }
+                if (rank == 1) {
+                    top1++;
+                }
+                if (rank <= 5) {
+                    top5++;
+                }
+                if (rank <= TOP_K) {
+                    top10++;
+                }
             }
 
-            // calculate reciprocol rank 
+            // calculate reciprocol rank
             double rr = rank > 0 ? 1.0 / rank : 0.0;
             totalRR += rr;
 
             // char to print in results
-            String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗"); 
+            String mark = rank == 1 ? "✓" : (rank > 1 ? "~" : "✗");
 
-            // 
+            //
             String top1t = hits.isEmpty() ? "(no results)" : hits.get(0).title();
 
             System.out.printf("%-4d  %-5s  %-7s  %-35s  %s%n",
                     i + 1, rank > 0 ? rank : "-", mark, truncate(q.answer(), 35), truncate(top1t, 45));
-  
+
             // if not a perfect result, we want to store data for the error analysis
             if (rank != 1) {
                 ArrayList<String> failure = new ArrayList<>();
@@ -178,12 +195,15 @@ public class Evaluator {
                 // top 5 search results
                 if (hits.size() >= 5) {
                     String top5_hits = "";
-                    for (Searcher.SearchResult res : hits.subList(0,5)) {
-                        if (hits.indexOf(res) == 4) { top5_hits += res.title(); } 
-                        else { top5_hits += res.title() + ", "; }
+                    for (Searcher.SearchResult res : hits.subList(0, 5)) {
+                        if (hits.indexOf(res) == 4) {
+                            top5_hits += res.title();
+                        } else {
+                            top5_hits += res.title() + ", ";
+                        }
                     }
                     failure.add(top5_hits);
-                } else { 
+                } else {
                     failure.add("");
                 }
 
@@ -191,17 +211,18 @@ public class Evaluator {
             }
 
             // Export to JSONL for Python script
-            // JSONL = JSON lines -> one JSON object per line 
+            // JSONL = JSON lines -> one JSON object per line
             if (exportPath != null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("{\"id\":").append(i + 1)
-                  .append(",\"category\":\"").append(escapeJson(q.category())).append("\"")
-                  .append(",\"clue\":\"").append(escapeJson(q.clue())).append("\"")
-                  .append(",\"gold\":\"").append(escapeJson(q.answer())).append("\"")
-                  .append(",\"candidates\":[");
+                        .append(",\"category\":\"").append(escapeJson(q.category())).append("\"")
+                        .append(",\"clue\":\"").append(escapeJson(q.clue())).append("\"")
+                        .append(",\"gold\":\"").append(escapeJson(q.answer())).append("\"")
+                        .append(",\"candidates\":[");
                 for (int c = 0; c < hits.size(); c++) {
                     sb.append("\"").append(escapeJson(hits.get(c).title())).append("\"");
-                    if (c < hits.size() - 1) sb.append(",");
+                    if (c < hits.size() - 1)
+                        sb.append(",");
                 }
                 sb.append("]}\n");
                 Files.writeString(exportPath, sb.toString(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -229,14 +250,16 @@ public class Evaluator {
     }
 
     /**
-     * used to tune the system. doesn't produce any output to the console, just returns MRR
+     * used to tune the system. doesn't produce any output to the console, just
+     * returns MRR
      *
-     * @param questions list of questions parsed from question file
-     * @param searcher a searcher class instance
+     * @param questions   list of questions parsed from question file
+     * @param searcher    a searcher class instance
      * @param useCategory a flag set on commaand invocation
      * @return MRR value
      */
-    public static double evaluateSilent(List<Question> questions, Searcher searcher, boolean useCategory) throws IOException {
+    public static double evaluateSilent(List<Question> questions, Searcher searcher, boolean useCategory)
+            throws IOException {
         int n = questions.size();
         double totalRR = 0.0;
 
@@ -262,7 +285,7 @@ public class Evaluator {
     /**
      * shorten string for more comprehensive output
      *
-     * @param s a string to shorten
+     * @param s   a string to shorten
      * @param max the max length the string can be
      * @return a shortened string
      */
@@ -270,4 +293,3 @@ public class Evaluator {
         return s.length() <= max ? s : s.substring(0, max - 1) + "…";
     }
 }
-

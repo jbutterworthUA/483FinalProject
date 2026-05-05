@@ -1,5 +1,5 @@
 # Jeopardy QA System — Lucene + LLM Implementation
-
+Report Link: [Report](https://docs.google.com/document/d/1g1L3-9bltMDGPsjRBCx24IT7NPfn0scHftKGibAbzj8/edit?usp=sharing)
 ## Project Structure
 
 ```

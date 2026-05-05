@@ -170,8 +170,8 @@ public class QueryBuilder {
 
             builder.add(new BoostQuery(contentPqBuilder.build(), phraseBoost), BooleanClause.Occur.SHOULD);
         }
-        
-        // Category terms 
+
+        // Category terms
         if (category != null && !category.isBlank()) {
             for (String word : category.split("\\s+")) {
                 String stemmed = analyzeSingle(word);
@@ -216,4 +216,3 @@ public class QueryBuilder {
     }
 
 }
-

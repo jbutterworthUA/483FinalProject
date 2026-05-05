@@ -7,10 +7,20 @@ import java.util.List;
  *
  * Command-line entry point. Four subcommands:
  *
- * index [--wiki_dir <dir>] [--index_dir <dir>]
- * evaluate [--questions <file>] [--index_dir <dir>] [--no_category] [--errors] [--export <file>]
- * search --index_dir <dir> --clue "<clue>" [--category "<cat>"] [--top_k N]
- * tune --questions <file> --index_dir <dir> [--no_category]
+ * index [--wiki_dir
+ * <dir>
+ * ] [--index_dir
+ * <dir>
+ * ]
+ * evaluate [--questions <file>] [--index_dir
+ * <dir>
+ * ] [--no_category] [--errors] [--export <file>]
+ * search --index_dir
+ * <dir>
+ * --clue "<clue>" [--category "<cat>"] [--top_k N]
+ * tune --questions <file> --index_dir
+ * <dir>
+ * [--no_category]
  */
 public class Main {
 
@@ -37,7 +47,8 @@ public class Main {
     /**
      * index subcommand
      *
-     * parse the command line args and check for flags relevant to the index command. launches
+     * parse the command line args and check for flags relevant to the index
+     * command. launches
      * the index builder
      *
      * --wiki_dir optional flag to specify the data set path
@@ -61,7 +72,8 @@ public class Main {
     /**
      * evaluate subcommand
      *
-     * parse command line args and check for flags relevant to the evaluate command. launches
+     * parse command line args and check for flags relevant to the evaluate command.
+     * launches
      * the evaluator
      *
      * --questions optional flag to specify path to questions
@@ -99,7 +111,8 @@ public class Main {
     /**
      * search subcommand
      *
-     * launches an interactive search that allows a user to input a category and a clue then 
+     * launches an interactive search that allows a user to input a category and a
+     * clue then
      * returns the topK results our system grabs
      *
      * --index_dir optional flag specifies path to lucene created index
@@ -135,7 +148,7 @@ public class Main {
                 }
             }
             sc.close();
-        // single search version
+            // single search version
         } else {
             try (Searcher searcher = new Searcher(indexDir)) {
                 printHits(searcher.search(clue, category, topK));
@@ -144,7 +157,7 @@ public class Main {
     }
 
     /**
-     * tune subcomman 
+     * tune subcomman
      *
      * used to test different k1 and b values
      *
@@ -170,17 +183,17 @@ public class Main {
         System.out.println("  " + "-".repeat(23));
 
         for (float k1 = 0.0f; k1 <= 2.5f; k1 += 0.1f) {
-          for (float b = 0.0f; b <= 1; b += 0.05f)
-            try (Searcher searcher = new Searcher(indexDir, k1, b)) {
-                double mrr = Evaluator.evaluateSilent(questions, searcher, useCategory);
-                System.out.printf("  %-10.1f | %-10.1f | %-10.4f%n", k1, b, mrr);
+            for (float b = 0.0f; b <= 1; b += 0.05f)
+                try (Searcher searcher = new Searcher(indexDir, k1, b)) {
+                    double mrr = Evaluator.evaluateSilent(questions, searcher, useCategory);
+                    System.out.printf("  %-10.1f | %-10.1f | %-10.4f%n", k1, b, mrr);
 
-                if (mrr > bestMrr) {
-                    bestMrr = mrr;
-                    bestK1 = k1;
-                    best_b = b;
+                    if (mrr > bestMrr) {
+                        bestMrr = mrr;
+                        bestK1 = k1;
+                        best_b = b;
+                    }
                 }
-            }
         }
 
         System.out.println("  " + "=".repeat(23));
@@ -229,26 +242,25 @@ public class Main {
      */
     private static void printUsage() {
         System.out.println("""
-            Usage: java -jar jeopardy-qa.jar <command> [options]
+                Usage: java -jar jeopardy-qa.jar <command> [options]
 
-            Commands:
-              index
-                [--wiki_dir  <dir>]    Directory containing the 80 Wikipedia files (defualt: wiki-subset-20140602)
-                [--index_dir <dir>]    Where to write the Lucene index             (default: wiki_index)
+                Commands:
+                  index
+                    [--wiki_dir  <dir>]    Directory containing the 80 Wikipedia files (defualt: wiki-subset-20140602)
+                    [--index_dir <dir>]    Where to write the Lucene index             (default: wiki_index)
 
-              evaluate
-                [--questions  <file>]  Path to the 100-question file               (default: wiki_questions.txt)
-                [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
-                [--no_category]        Disable category signal in queries
-                [--errors]             Print detailed failure analysis
-                [--export     <file>]  Export top 10 results to JSONL for LLM re-ranking
+                  evaluate
+                    [--questions  <file>]  Path to the 100-question file               (default: wiki_questions.txt)
+                    [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
+                    [--no_category]        Disable category signal in queries
+                    [--errors]             Print detailed failure analysis
+                    [--export     <file>]  Export top 10 results to JSONL for LLM re-ranking
 
-              search
-                [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
-                [--clue       <str>]   Single clue to search
-                [--category   <str>]   Category string (optional)
-                [--top_k      <int>]   Number of results to return                 (default: 10)
-             """);
+                  search
+                    [--index_dir  <dir>]   Lucene index directory                      (default: wiki_index)
+                    [--clue       <str>]   Single clue to search
+                    [--category   <str>]   Category string (optional)
+                    [--top_k      <int>]   Number of results to return                 (default: 10)
+                 """);
     }
 }
-
